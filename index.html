@@ -35,7 +35,7 @@
             overflow: hidden;
         }
 
-        /* TOP TOOLBAR */
+        /* TOP TOOLBAR - HIDDEN DURING EXPORT */
         .toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -124,7 +124,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
-        /* LOGO PLAYGROUND - WHITE SPACE (expands vertically, no cards, pure logos with free position & size) */
+        /* LOGO PLAYGROUND - WHITE SPACE (expands vertically, pure logos with free position & size) */
         .logo-playground {
             background: white;
             padding: 2rem 1.8rem;
@@ -196,20 +196,73 @@
             border-color: #2266a8;
         }
 
-        /* LOGOS CONTAINER: NO CARDS/BORDERS, pure logos with custom size & draggable */
-        .logos-free-container {
-            min-height: 140px;
+        /* ROW-BASED LOGO CONTAINER SYSTEM */
+        .logo-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100px;
+            padding: 0.5rem 0;
+        }
+        
+        .logo-row {
             background: #ffffff;
             border-radius: 24px;
             display: flex;
             flex-wrap: wrap;
             justify-content: flex-start;
             align-items: center;
-            gap: 2rem 2.2rem;
-            padding: 1.8rem 1rem;
-            transition: 0.2s;
+            gap: 1.8rem 2rem;
+            padding: 1.5rem 1.2rem;
+            transition: all 0.2s;
             border: 1px solid #f0f4fa;
+            position: relative;
         }
+        
+        .logo-row-handle {
+            position: absolute;
+            left: -32px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #eef3fc;
+            border: 1px solid #c8d9e8;
+            border-radius: 8px;
+            width: 24px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            padding: 4px 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 5;
+        }
+        
+        .logo-row:hover .logo-row-handle {
+            opacity: 1;
+        }
+        
+        .logo-row-handle:active {
+            cursor: grabbing;
+        }
+        
+        .logo-row-handle::before,
+        .logo-row-handle::after {
+            content: "";
+            display: block;
+            width: 16px;
+            height: 2px;
+            background: #6b8cae;
+            margin: 2px 0;
+            border-radius: 2px;
+        }
+        
+        .logo-row-handle::after {
+            margin-top: -1px;
+        }
+        
         /* Individual logo item: no background card, just image + subtle delete */
         .free-logo-item {
             position: relative;
@@ -217,6 +270,7 @@
             cursor: grab;
             transition: transform 0.1s ease;
             user-select: none;
+            flex-shrink: 0;
         }
         .free-logo-item:active {
             cursor: grabbing;
@@ -228,6 +282,7 @@
             object-fit: contain;
             transition: width 0.2s, height 0.2s;
             pointer-events: none;
+            max-width: 250px; /* Updated max size */
         }
         /* clean delete badge without card */
         .logo-delete-badge {
@@ -255,13 +310,77 @@
         .free-logo-item:hover .logo-delete-badge {
             opacity: 1;
         }
-        /* No separator lines anymore - we removed cards and extra containers */
+        
+        /* Individual size control - hidden during export */
+        .logo-size-control {
+            margin-top: 8px;
+            font-size: 11px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            padding: 2px 4px;
+            border-radius: 30px;
+        }
+        .logo-size-control label {
+            font-weight: 500;
+            color: #4b6a88;
+        }
+        .logo-size-control input {
+            width: 55px;
+            padding: 3px 5px;
+            border-radius: 30px;
+            border: 1px solid #cbdde6;
+            font-size: 11px;
+            text-align: center;
+        }
+        
         .empty-logos-message {
             width: 100%;
             text-align: center;
             color: #99aebb;
             padding: 2rem;
             font-size: 0.9rem;
+        }
+        
+        /* Row controls - hidden during export */
+        .row-controls {
+            position: absolute;
+            right: -36px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .logo-row:hover .row-controls {
+            opacity: 1;
+        }
+        .row-control-btn {
+            background: #eef3fc;
+            border: 1px solid #c8d9e8;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .row-control-btn:hover {
+            background: #d9e7f5;
+            border-color: #2266a8;
+            transform: scale(1.05);
+        }
+        .row-control-btn.danger:hover {
+            background: #ffebee;
+            border-color: #ef5350;
+            color: #c62828;
         }
 
         /* export area */
@@ -278,7 +397,10 @@
         @media (max-width: 700px) {
             body { padding: 1rem; }
             .toolbar { flex-direction: column; align-items: stretch; }
-            .logos-free-container { justify-content: center; gap: 1.5rem; }
+            .logo-rows-container { gap: 1rem; }
+            .logo-row { gap: 1.2rem 1.5rem; padding: 1.2rem 0.8rem; }
+            .logo-row-handle { left: -28px; width: 22px; }
+            .row-controls { right: -32px; }
         }
 
         .toast-msg {
@@ -296,11 +418,21 @@
             transition: 0.2s;
             pointer-events: none;
         }
+        
+        /* ELEMENTS TO HIDE DURING EXPORT */
+        .no-export,
+        .logo-delete-badge,
+        .logo-size-control,
+        .logo-row-handle,
+        .row-controls,
+        .empty-logos-message {
+            /* These will be ignored by html2canvas via ignoreElements callback */
+        }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <div class="toolbar">
+    <div class="toolbar no-export">
         <div class="brand">
             <h2>🎨 PosterCanvas · Logo Studio</h2>
         </div>
@@ -322,36 +454,37 @@
             <div class="main-image-container">
                 <img id="mainPosterImg" src="https://placehold.co/1000x450/eef3fc/3f6b8c?text=📸+Upload+Your+Poster+Image" alt="main poster">
             </div>
-            <!-- WHITE SPACE: free arrangement of logos without card enclosures -->
+            <!-- WHITE SPACE: row-based free arrangement of logos -->
             <div class="logo-playground">
-                <div class="logo-strip-title">
+                <div class="logo-strip-title no-export">
                     <div class="title-section">
-                        <h4>✨ Logo Strip — free position, resize, drag & drop</h4>
-                        <p>Logos appear without boxes. Drag to reorder, adjust size individually or globally.</p>
+                        <h4>✨ Logo Studio — Rows, Resize & Reorder</h4>
+                        <p>Drag logos within rows. Drag row handles (⋮) to reorder entire rows. Resize individually or globally.</p>
                     </div>
                     <div class="logo-controls-panel">
                         <div class="size-control">
                             <label>📏 Global Size</label>
-                            <input type="number" id="globalLogoSize" value="80" step="5" min="30" max="180"> px
+                            <input type="number" id="globalLogoSize" value="80" step="5" min="30" max="250"> px
                         </div>
                         <div class="arrange-buttons">
-                            <button id="arrangeLeftBtn" class="icon-btn" title="Align Left (flex-start)">⬅️ Left</button>
+                            <button id="arrangeLeftBtn" class="icon-btn" title="Align Left">⬅️ Left</button>
                             <button id="arrangeCenterBtn" class="icon-btn" title="Center">🎯 Center</button>
                             <button id="arrangeRightBtn" class="icon-btn" title="Align Right">➡️ Right</button>
                         </div>
                         <div class="arrange-buttons">
-                            <button id="resetOrderBtn" class="icon-btn" title="Reset positions order">🔄 Reset order</button>
+                            <button id="addRowBtn" class="icon-btn" title="Add New Row">➕ Row</button>
+                            <button id="resetOrderBtn" class="icon-btn" title="Reset positions">🔄 Reset</button>
                         </div>
                     </div>
                 </div>
-                <div id="logosFreeContainer" class="logos-free-container">
-                    <div class="empty-logos-message">✨ Drop or upload logos — they will appear freely, no card background. Adjust size & drag to rearrange.</div>
+                <div id="logoRowsContainer" class="logo-rows-container">
+                    <!-- Rows will be dynamically inserted here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="export-actions">
+    <div class="export-actions no-export">
         <button class="btn btn-outline" id="exportPngBtn">📸 Export as PNG</button>
         <button class="btn btn-primary" id="exportPdfBtn">📑 Export as PDF</button>
     </div>
@@ -363,7 +496,7 @@
     const mainImageInput = document.getElementById('mainImageUpload');
     const mainPosterImg = document.getElementById('mainPosterImg');
     const logoUploadInput = document.getElementById('logoUpload');
-    const logosContainer = document.getElementById('logosFreeContainer');
+    const logoRowsContainer = document.getElementById('logoRowsContainer');
     const exportPngBtn = document.getElementById('exportPngBtn');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     const captureArea = document.getElementById('posterCaptureArea');
@@ -373,10 +506,13 @@
     const arrangeCenterBtn = document.getElementById('arrangeCenterBtn');
     const arrangeRightBtn = document.getElementById('arrangeRightBtn');
     const resetOrderBtn = document.getElementById('resetOrderBtn');
+    const addRowBtn = document.getElementById('addRowBtn');
 
-    // Data store
-    let logosData = []; // each { id, url, customWidth, originalWidth? we store size preference per logo (px) }
-    let sortableInstance = null;
+    // Data store - updated for row-based structure
+    let logosData = []; // each { id, url, customWidth, rowId }
+    let rowsData = [{ id: 'row-1', alignment: 'flex-start' }]; // default first row
+    let sortableRowsInstance = null;
+    let sortableLogoInstances = {}; // rowId -> Sortable instance
 
     // Helper toast
     function showToast(msg, duration = 1800) {
@@ -385,133 +521,240 @@
         setTimeout(() => { toastEl.style.opacity = '0'; }, duration);
     }
 
-    // Set global size for all existing logos (preserve individual size if needed, but we apply to all)
-    function applyGlobalSizeToAll() {
-        let newSize = parseInt(globalLogoSizeInput.value);
-        if (isNaN(newSize)) newSize = 80;
-        newSize = Math.min(180, Math.max(30, newSize));
-        globalLogoSizeInput.value = newSize;
-        logosData.forEach(logo => { logo.customWidth = newSize; });
-        renderLogosFree();
-        showToast(`Global logo size set to ${newSize}px`, 1000);
-    }
-
-    // change arrangement (justify-content)
-    function setArrangement(alignType) {
-        if (alignType === 'left') logosContainer.style.justifyContent = 'flex-start';
-        else if (alignType === 'center') logosContainer.style.justifyContent = 'center';
-        else if (alignType === 'right') logosContainer.style.justifyContent = 'flex-end';
-        showToast(`Logos alignment: ${alignType}`, 900);
-    }
-
-    // render logos without cards, simple images with individual size
-    function renderLogosFree() {
-        if (!logosContainer) return;
-        logosContainer.innerHTML = '';
-        if (!logosData.length) {
-            const emptyMsg = document.createElement('div');
-            emptyMsg.className = 'empty-logos-message';
-            emptyMsg.innerText = '➕ Click "Add Logos" to place brand icons. Drag to reorder, resize individually using number inputs below each logo.';
-            logosContainer.appendChild(emptyMsg);
-            if (sortableInstance) sortableInstance.destroy();
-            sortableInstance = null;
-            return;
-        }
-
-        logosData.forEach((logo, idx) => {
-            const logoWrapper = document.createElement('div');
-            logoWrapper.className = 'free-logo-item';
-            logoWrapper.setAttribute('data-id', logo.id);
-            // inline style for no-card background, just margin
-            logoWrapper.style.margin = '0';
-            logoWrapper.style.display = 'inline-flex';
-            logoWrapper.style.position = 'relative';
-
-            const img = document.createElement('img');
-            const logoSize = logo.customWidth || 80;
-            img.style.width = `${logoSize}px`;
-            img.style.height = 'auto';
-            img.style.maxHeight = '100px'; // prevent huge distortion but respect width
-            img.style.objectFit = 'contain';
-            img.src = logo.url;
-            img.alt = `logo-${idx}`;
-            img.setAttribute('crossorigin', 'anonymous');
-            
-            // Delete badge
-            const delBtn = document.createElement('span');
-            delBtn.className = 'logo-delete-badge';
-            delBtn.innerHTML = '✕';
-            delBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                removeLogoById(logo.id);
-            });
-
-            // Individual size control (tiny clean element below logo) - shows as simple inline control
-            const sizeCtrl = document.createElement('div');
-            sizeCtrl.style.marginTop = '8px';
-            sizeCtrl.style.fontSize = '11px';
-            sizeCtrl.style.display = 'flex';
-            sizeCtrl.style.gap = '6px';
-            sizeCtrl.style.alignItems = 'center';
-            sizeCtrl.style.justifyContent = 'center';
-            sizeCtrl.style.background = 'transparent';
-            sizeCtrl.style.padding = '2px 4px';
-            sizeCtrl.style.borderRadius = '30px';
-            
-            const sizeLabel = document.createElement('span');
-            sizeLabel.innerText = 'W:';
-            sizeLabel.style.fontWeight = '500';
-            sizeLabel.style.color = '#4b6a88';
-            const sizeInput = document.createElement('input');
-            sizeInput.type = 'number';
-            sizeInput.value = logo.customWidth || 80;
-            sizeInput.style.width = '55px';
-            sizeInput.style.padding = '3px 5px';
-            sizeInput.style.borderRadius = '30px';
-            sizeInput.style.border = '1px solid #cbdde6';
-            sizeInput.style.fontSize = '11px';
-            sizeInput.style.textAlign = 'center';
-            sizeInput.addEventListener('change', (e) => {
-                let newVal = parseInt(e.target.value);
-                if (isNaN(newVal)) newVal = 80;
-                newVal = Math.min(180, Math.max(30, newVal));
-                logo.customWidth = newVal;
-                renderLogosFree(); // re-render to update both size and controls
-                showToast(`Logo resized to ${newVal}px`, 800);
-            });
-            sizeCtrl.appendChild(sizeLabel);
-            sizeCtrl.appendChild(sizeInput);
-            
-            logoWrapper.appendChild(img);
-            logoWrapper.appendChild(delBtn);
-            logoWrapper.appendChild(sizeCtrl);
-            logosContainer.appendChild(logoWrapper);
+    // Create a new row element
+    function createRowElement(rowId, alignment = 'flex-start') {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'logo-row';
+        rowEl.setAttribute('data-row-id', rowId);
+        rowEl.style.justifyContent = alignment;
+        
+        // Row drag handle (for reordering rows)
+        const handle = document.createElement('div');
+        handle.className = 'logo-row-handle no-export';
+        handle.title = 'Drag to reorder row';
+        rowEl.appendChild(handle);
+        
+        // Row controls (add/remove)
+        const controls = document.createElement('div');
+        controls.className = 'row-controls no-export';
+        
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'row-control-btn danger';
+        removeBtn.innerHTML = '🗑️';
+        removeBtn.title = 'Remove row';
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeRow(rowId);
         });
+        
+        controls.appendChild(removeBtn);
+        rowEl.appendChild(controls);
+        
+        // Container for logos in this row
+        const logosContainer = document.createElement('div');
+        logosContainer.className = 'row-logos-container';
+        logosContainer.style.display = 'flex';
+        logosContainer.style.flexWrap = 'wrap';
+        logosContainer.style.gap = '1.8rem 2rem';
+        logosContainer.style.alignItems = 'center';
+        logosContainer.style.width = '100%';
+        rowEl.appendChild(logosContainer);
+        
+        return rowEl;
+    }
 
-        // reinitialize Sortable after render for drag-drop reordering
-        if (sortableInstance) sortableInstance.destroy();
-        sortableInstance = new Sortable(logosContainer, {
-            animation: 200,
-            handle: '.free-logo-item',
-            draggable: '.free-logo-item',
-            onEnd: function() {
-                // update logosData order based on DOM order
-                const items = document.querySelectorAll('#logosFreeContainer .free-logo-item');
-                const newOrder = [];
-                items.forEach(item => {
-                    const id = item.getAttribute('data-id');
-                    const found = logosData.find(l => l.id === id);
-                    if (found) newOrder.push(found);
+    // Render all rows and logos
+    function renderAll() {
+        if (!logoRowsContainer) return;
+        logoRowsContainer.innerHTML = '';
+        
+        if (rowsData.length === 0) {
+            // Add default row if none exist
+            rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start' }];
+        }
+        
+        // Render each row
+        rowsData.forEach(row => {
+            const rowEl = createRowElement(row.id, row.alignment);
+            const logosContainer = rowEl.querySelector('.row-logos-container');
+            
+            // Filter logos for this row
+            const rowLogos = logosData.filter(logo => logo.rowId === row.id);
+            
+            if (rowLogos.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'empty-logos-message no-export';
+                emptyMsg.innerText = '➕ Add logos to this row';
+                emptyMsg.style.width = '100%';
+                emptyMsg.style.padding = '1rem';
+                emptyMsg.style.fontSize = '0.85rem';
+                logosContainer.appendChild(emptyMsg);
+            } else {
+                rowLogos.forEach(logo => {
+                    const logoWrapper = document.createElement('div');
+                    logoWrapper.className = 'free-logo-item';
+                    logoWrapper.setAttribute('data-id', logo.id);
+                    logoWrapper.style.margin = '0';
+                    
+                    const img = document.createElement('img');
+                    const logoSize = logo.customWidth || 80;
+                    img.style.width = `${logoSize}px`;
+                    img.style.height = 'auto';
+                    img.style.maxHeight = '250px'; // Updated max
+                    img.style.objectFit = 'contain';
+                    img.src = logo.url;
+                    img.alt = `logo-${logo.id}`;
+                    img.setAttribute('crossorigin', 'anonymous');
+                    
+                    // Delete badge (hidden during export)
+                    const delBtn = document.createElement('span');
+                    delBtn.className = 'logo-delete-badge no-export';
+                    delBtn.innerHTML = '✕';
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeLogoById(logo.id);
+                    });
+                    
+                    // Individual size control (hidden during export)
+                    const sizeCtrl = document.createElement('div');
+                    sizeCtrl.className = 'logo-size-control no-export';
+                    
+                    const sizeLabel = document.createElement('label');
+                    sizeLabel.innerText = 'W:';
+                    const sizeInput = document.createElement('input');
+                    sizeInput.type = 'number';
+                    sizeInput.value = logo.customWidth || 80;
+                    sizeInput.min = "30";
+                    sizeInput.max = "250"; // Updated max
+                    sizeInput.addEventListener('change', (e) => {
+                        let newVal = parseInt(e.target.value);
+                        if (isNaN(newVal)) newVal = 80;
+                        newVal = Math.min(250, Math.max(30, newVal)); // Updated validation
+                        logo.customWidth = newVal;
+                        img.style.width = `${newVal}px`;
+                        showToast(`Logo resized to ${newVal}px`, 800);
+                    });
+                    
+                    sizeCtrl.appendChild(sizeLabel);
+                    sizeCtrl.appendChild(sizeInput);
+                    
+                    logoWrapper.appendChild(img);
+                    logoWrapper.appendChild(delBtn);
+                    logoWrapper.appendChild(sizeCtrl);
+                    logosContainer.appendChild(logoWrapper);
                 });
-                if (newOrder.length === logosData.length) {
-                    logosData = newOrder;
-                    showToast('Logo order updated', 800);
+            }
+            
+            logoRowsContainer.appendChild(rowEl);
+            
+            // Initialize Sortable for logos within this row
+            if (sortableLogoInstances[row.id]) {
+                sortableLogoInstances[row.id].destroy();
+            }
+            sortableLogoInstances[row.id] = new Sortable(logosContainer, {
+                group: 'logos', // Allow dragging between rows
+                animation: 200,
+                handle: '.free-logo-item',
+                draggable: '.free-logo-item',
+                onEnd: function(evt) {
+                    // Handle logo moved between rows
+                    const itemEl = evt.item;
+                    const newRowEl = itemEl.closest('.logo-row');
+                    const oldRowId = itemEl.getAttribute('data-row-id') || rowsData[0].id;
+                    const newRowId = newRowEl.getAttribute('data-row-id');
+                    const logoId = itemEl.getAttribute('data-id');
+                    
+                    if (oldRowId !== newRowId) {
+                        // Update logo's row assignment
+                        const logo = logosData.find(l => l.id === logoId);
+                        if (logo) {
+                            logo.rowId = newRowId;
+                            itemEl.setAttribute('data-row-id', newRowId);
+                            showToast('Logo moved to new row', 800);
+                            // Re-render to update data structure
+                            renderAll();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Initialize Sortable for rows themselves
+        if (sortableRowsInstance) sortableRowsInstance.destroy();
+        sortableRowsInstance = new Sortable(logoRowsContainer, {
+            animation: 200,
+            handle: '.logo-row-handle',
+            draggable: '.logo-row',
+            onEnd: function() {
+                // Update rowsData order based on DOM
+                const rowElements = logoRowsContainer.querySelectorAll('.logo-row');
+                const newOrder = [];
+                rowElements.forEach(rowEl => {
+                    const rowId = rowEl.getAttribute('data-row-id');
+                    const row = rowsData.find(r => r.id === rowId);
+                    if (row) newOrder.push(row);
+                });
+                if (newOrder.length === rowsData.length) {
+                    rowsData = newOrder;
+                    showToast('Row order updated', 800);
                 }
             }
         });
     }
 
-    // remove logo by id, revoke blob if possible
+    // Add a new empty row
+    function addNewRow() {
+        const newRowId = `row-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        rowsData.push({ id: newRowId, alignment: 'flex-start' });
+        renderAll();
+        showToast('New row added', 900);
+    }
+
+    // Remove a row and its logos
+    function removeRow(rowId) {
+        // Remove logos in this row
+        const logosToRemove = logosData.filter(l => l.rowId === rowId);
+        logosToRemove.forEach(logo => {
+            if (logo.url && logo.url.startsWith('blob:')) {
+                URL.revokeObjectURL(logo.url);
+            }
+        });
+        logosData = logosData.filter(l => l.rowId !== rowId);
+        
+        // Remove row from data
+        rowsData = rowsData.filter(r => r.id !== rowId);
+        
+        // Ensure at least one row exists
+        if (rowsData.length === 0) {
+            rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start' }];
+        }
+        
+        renderAll();
+        showToast('Row removed', 900);
+    }
+
+    // Set global size for all logos
+    function applyGlobalSizeToAll() {
+        let newSize = parseInt(globalLogoSizeInput.value);
+        if (isNaN(newSize)) newSize = 80;
+        newSize = Math.min(250, Math.max(30, newSize)); // Updated validation
+        globalLogoSizeInput.value = newSize;
+        logosData.forEach(logo => { logo.customWidth = newSize; });
+        renderAll();
+        showToast(`Global logo size set to ${newSize}px`, 1000);
+    }
+
+    // Change alignment for all rows (or could be per-row in future)
+    function setArrangement(alignType) {
+        rowsData.forEach(row => {
+            row.alignment = alignType === 'left' ? 'flex-start' : 
+                           alignType === 'center' ? 'center' : 'flex-end';
+        });
+        renderAll();
+        showToast(`All rows alignment: ${alignType}`, 900);
+    }
+
+    // Remove logo by id
     function removeLogoById(id) {
         const index = logosData.findIndex(l => l.id === id);
         if (index !== -1) {
@@ -520,19 +763,27 @@
                 URL.revokeObjectURL(removed.url);
             }
             logosData.splice(index, 1);
-            renderLogosFree();
+            renderAll();
             showToast('Logo removed', 900);
         }
     }
 
-    // add new logos from files
-    function addLogosFromFiles(files) {
+    // Add new logos to the first row (or selected row in future)
+    function addLogosFromFiles(files, targetRowId = null) {
         if (!files.length) return;
         const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
         if (validFiles.length === 0) {
             showToast('Please select valid image files', 1200);
             return;
         }
+        
+        // Default to first row if none specified
+        const rowId = targetRowId || (rowsData[0] ? rowsData[0].id : (() => {
+            const newId = `row-${Date.now()}`;
+            rowsData.push({ id: newId, alignment: 'flex-start' });
+            return newId;
+        })());
+        
         validFiles.forEach(file => {
             const blobUrl = URL.createObjectURL(file);
             const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
@@ -541,14 +792,15 @@
                 id: newId,
                 url: blobUrl,
                 customWidth: defaultSize,
+                rowId: rowId, // Assign to target row
                 originalFile: file
             });
         });
-        renderLogosFree();
+        renderAll();
         showToast(`Added ${validFiles.length} logo(s)`, 1300);
     }
 
-    // set main poster
+    // Set main poster image
     function setMainPoster(file) {
         if (!file) return;
         const reader = new FileReader();
@@ -559,10 +811,10 @@
         reader.readAsDataURL(file);
     }
 
-    // Reset order based on current array (re-render same)
+    // Reset order (re-render current structure)
     function resetOrder() {
-        renderLogosFree();
-        showToast('Order reset (current sequence)', 800);
+        renderAll();
+        showToast('Layout reset', 800);
     }
 
     // EVENT LISTENERS
@@ -582,25 +834,29 @@
     arrangeCenterBtn.addEventListener('click', () => setArrangement('center'));
     arrangeRightBtn.addEventListener('click', () => setArrangement('right'));
     resetOrderBtn.addEventListener('click', resetOrder);
+    addRowBtn.addEventListener('click', addNewRow);
 
-    // Drag & drop for logos container (add new logos easily)
-    logosContainer.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        logosContainer.style.background = '#fbfeff';
-    });
-    logosContainer.addEventListener('dragleave', () => {
-        logosContainer.style.background = 'white';
-    });
-    logosContainer.addEventListener('drop', (e) => {
-        e.preventDefault();
-        logosContainer.style.background = 'white';
-        const files = e.dataTransfer.files;
-        if (files && files.length) {
-            addLogosFromFiles(Array.from(files));
-        }
+    // Drag & drop for adding logos to specific rows
+    document.querySelectorAll('.logo-row').forEach(rowEl => {
+        rowEl.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            rowEl.style.background = '#fbfeff';
+        });
+        rowEl.addEventListener('dragleave', () => {
+            rowEl.style.background = 'white';
+        });
+        rowEl.addEventListener('drop', (e) => {
+            e.preventDefault();
+            rowEl.style.background = 'white';
+            const files = e.dataTransfer.files;
+            if (files && files.length) {
+                const rowId = rowEl.getAttribute('data-row-id');
+                addLogosFromFiles(Array.from(files), rowId);
+            }
+        });
     });
 
-    // poster main image drop support
+    // Poster main image drop support
     const posterMainDiv = document.querySelector('.main-image-container');
     posterMainDiv.addEventListener('dragover', (e) => e.preventDefault());
     posterMainDiv.addEventListener('drop', (e) => {
@@ -610,10 +866,11 @@
         else showToast('Drop image for poster', 1000);
     });
 
-    // EXPORT: PNG and PDF with high resolution and exact look (no card enclosures, pure logos)
+    // EXPORT: PNG and PDF - ONLY captures poster + logos (no UI controls)
     async function captureFinalPoster(scale = 2.5) {
         const originalOverflow = captureArea.style.overflow;
         captureArea.style.overflow = 'visible';
+        
         try {
             const canvas = await html2canvas(captureArea, {
                 scale: scale,
@@ -623,10 +880,22 @@
                 logging: false,
                 windowWidth: captureArea.scrollWidth,
                 windowHeight: captureArea.scrollHeight,
+                // CRITICAL: Ignore all UI elements during export
+                ignoreElements: (element) => {
+                    return element.classList && (
+                        element.classList.contains('no-export') || 
+                        element.classList.contains('logo-delete-badge') ||
+                        element.classList.contains('logo-size-control') ||
+                        element.classList.contains('logo-row-handle') ||
+                        element.classList.contains('row-controls') ||
+                        element.classList.contains('empty-logos-message') ||
+                        element.closest?.('.no-export')
+                    );
+                }
             });
             return canvas;
         } catch (err) {
-            console.error(err);
+            console.error('Capture error:', err);
             showToast('Capture error, please retry', 1500);
             return null;
         } finally {
@@ -675,27 +944,41 @@
     exportPngBtn.addEventListener('click', exportAsPNG);
     exportPdfBtn.addEventListener('click', exportAsPDF);
 
-    // Demo sample logos (optional but nice: show examples with NO card enclosures)
-    function addSampleLogos() {
-        if (logosData.length === 0) {
-            const sampleUrls = [
-                'https://placehold.co/400x180/daecff/2c5a7a?text=✨BRAND+A',
-                'https://placehold.co/400x180/e3f0fa/2f4f72?text=⚡STUDIO+X',
-                'https://placehold.co/400x180/f2f7ff/1f4970?text=🎯CREATIVE+LAB'
+    // Initialize with sample data for demo
+    function addSampleData() {
+        if (logosData.length === 0 && mainPosterImg.src.includes('placehold.co')) {
+            // Create two rows for demo
+            rowsData = [
+                { id: 'row-1', alignment: 'flex-start' },
+                { id: 'row-2', alignment: 'center' }
             ];
-            sampleUrls.forEach((url, idx) => {
+            
+            const sampleLogos = [
+                { url: 'https://placehold.co/400x180/daecff/2c5a7a?text=✨BRAND+A', rowId: 'row-1' },
+                { url: 'https://placehold.co/400x180/e3f0fa/2f4f72?text=⚡STUDIO+X', rowId: 'row-1' },
+                { url: 'https://placehold.co/400x180/f2f7ff/1f4970?text=🎯CREATIVE+LAB', rowId: 'row-2' },
+                { url: 'https://placehold.co/400x180/e6f4ff/1a3a5f?text=🚀GROWTH+CO', rowId: 'row-2' }
+            ];
+            
+            sampleLogos.forEach((item, idx) => {
                 const fakeId = `sample-${idx}-${Date.now()}`;
-                logosData.push({ id: fakeId, url: url, customWidth: 80 });
+                logosData.push({ 
+                    id: fakeId, 
+                    url: item.url, 
+                    customWidth: 80,
+                    rowId: item.rowId
+                });
             });
-            renderLogosFree();
-            showToast('✨ Sample logos added (card-free)', 1500);
+            renderAll();
+            showToast('✨ Sample layout loaded (drag rows & logos!)', 1800);
         }
     }
-    setTimeout(() => {
-        if (logosData.length === 0 && mainPosterImg.src.includes('placehold.co')) {
-            addSampleLogos();
-        }
-    }, 600);
+    
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+        renderAll(); // Initial render with default row
+        setTimeout(addSampleData, 600);
+    });
 </script>
 </body>
 </html>
