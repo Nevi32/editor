@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>PosterCanvas Pro | Pixel-Perfect Logo Studio</title>
+    <title>PosterCanvas Pro | Smart Logo Studio + Layout Designer</title>
     <!-- html2canvas + jspdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -41,8 +41,6 @@
             padding: 1rem 2rem;
             background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
             border-bottom: 1px solid #e6eef7;
-            position: relative;
-            z-index: 10;
         }
         .brand h2 {
             font-size: 1.5rem;
@@ -57,6 +55,7 @@
             display: flex;
             gap: 0.7rem;
             flex-wrap: wrap;
+            align-items: center;
         }
         .btn {
             border: none;
@@ -103,6 +102,24 @@
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
             animation: none;
         }
+        .btn-save {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+        }
+        .btn-save:hover {
+            background: linear-gradient(135deg, #047857, #065f46);
+            box-shadow: 0 6px 18px rgba(6, 95, 70, 0.4);
+        }
+        .btn-load {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+        }
+        .btn-load:hover {
+            background: linear-gradient(135deg, #6d28d9, #5b21b6);
+            box-shadow: 0 6px 18px rgba(91, 33, 182, 0.4);
+        }
         @keyframes pulse {
             0%, 100% { box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); }
             50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.55); }
@@ -132,6 +149,13 @@
             padding: 2rem;
             border-bottom: 2px dashed #dbe4ef;
             position: relative;
+            min-height: 200px;
+        }
+        .main-image-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
         }
         #mainPosterImg {
             max-width: 100%;
@@ -142,8 +166,17 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             transition: box-shadow 0.3s ease;
         }
+        #mainPosterImg:hover {
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+        }
+        .main-image-placeholder {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 2rem;
+        }
 
-        /* LOGO STUDIO AREA */
+        /* LOGO STUDIO AREA - EXPORT SAFE STYLING */
         .logo-playground {
             background: white;
             padding: 2.2rem 2rem;
@@ -221,9 +254,18 @@
             text-align: center;
             font-weight: 600;
             font-size: 0.85rem;
+            transition: border-color 0.2s;
+        }
+        .size-control input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
         
-        .arrange-buttons { display: flex; gap: 5px; }
+        .arrange-buttons {
+            display: flex;
+            gap: 5px;
+        }
         .icon-btn {
             background: white;
             border: 1px solid #e2e8f0;
@@ -262,23 +304,12 @@
             padding: 2px;
             outline: none;
         }
-        
-        .toggle-guides {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
-            color: #475569;
+        .layout-selector select option {
             background: white;
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            user-select: none;
+            color: #1e293b;
         }
-        .toggle-guides input { cursor: pointer; }
 
-        /* ROW CONTAINER - EXPORT SAFE */
+        /* ROW-BASED LOGO CONTAINER - EXPORT READY */
         .logo-rows-container {
             display: flex;
             flex-direction: column;
@@ -302,7 +333,6 @@
             border: 1px solid #eef2f7;
             position: relative;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            min-height: 80px;
         }
         .logo-row::before {
             content: '';
@@ -312,6 +342,11 @@
             background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
             border-radius: 28px 28px 0 0;
             opacity: 0.7;
+        }
+        .logo-row:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-color: #dbe4ef;
+            transform: translateY(-2px);
         }
         
         /* Row drag handle */
@@ -334,6 +369,7 @@
             opacity: 0;
             transition: all 0.2s;
             z-index: 5;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
         .logo-row:hover .logo-row-handle { opacity: 1; }
         .logo-row-handle:active { cursor: grabbing; }
@@ -347,46 +383,37 @@
             margin: 3px 0;
             border-radius: 3px;
         }
+        .logo-row-handle::after { margin-top: -0.5px; }
         
-        /* LOGO ITEMS - FREE POSITIONING ENABLED */
+        /* LOGO ITEMS - CLEAN EXPORT STYLE */
         .free-logo-item {
             position: relative;
             display: inline-flex;
             cursor: grab;
-            transition: transform 0.15s ease;
+            transition: all 0.2s ease;
             user-select: none;
             flex-shrink: 0;
             padding: 8px;
             border-radius: 16px;
-            /* Critical: allow free horizontal movement */
-            margin-left: 0 !important;
-            margin-right: 0 !important;
         }
         .free-logo-item:hover {
             background: rgba(59, 130, 246, 0.06);
             transform: scale(1.03);
-            z-index: 3;
         }
-        .free-logo-item:active { cursor: grabbing; z-index: 4; }
-        .free-logo-item.dragging {
-            z-index: 100 !important;
-            opacity: 0.95;
-            transform: scale(1.08) !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
+        .free-logo-item:active { cursor: grabbing; }
         .free-logo-item img {
             display: block;
             width: auto;
             height: auto;
             object-fit: contain;
+            transition: all 0.25s ease;
             pointer-events: none;
             max-width: 250px;
             filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.12));
-            transition: filter 0.2s ease;
         }
         .free-logo-item:hover img {
             filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.18));
+            transform: scale(1.02);
         }
         
         /* Delete badge */
@@ -427,7 +454,10 @@
             border-radius: 20px;
             backdrop-filter: blur(4px);
         }
-        .logo-size-control label { font-weight: 600; color: #475569; }
+        .logo-size-control label {
+            font-weight: 600;
+            color: #475569;
+        }
         .logo-size-control input {
             width: 48px;
             padding: 2px 4px;
@@ -438,21 +468,25 @@
             font-weight: 600;
         }
         
-        /* Alignment guides - toggleable, hidden in export */
-        .alignment-guide {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: rgba(59, 130, 246, 0.3);
-            pointer-events: none;
-            z-index: 1;
-            display: none;
+        /* Decorative divider - INCLUDED IN EXPORT */
+        .row-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 0.5rem 0;
+            position: relative;
         }
-        .alignment-guide.active { display: block; }
-        .alignment-guide.center { left: 50%; }
-        .alignment-guide.left { left: 15%; }
-        .alignment-guide.right { right: 15%; }
+        .row-divider::after {
+            content: '✦';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 0 12px;
+            color: #94a3b8;
+            font-size: 10px;
+        }
         
         .empty-logos-message {
             width: 100%;
@@ -499,23 +533,32 @@
             border-color: #3b82f6;
             color: #2563eb;
             transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
         .row-control-btn.danger:hover {
             background: #fef2f2;
             border-color: #ef4444;
             color: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
         }
 
+        /* EXPORT ACTIONS */
         .export-actions {
             padding: 1.2rem 2rem 2rem 2rem;
             background: linear-gradient(135deg, #ffffff, #f8fafc);
             border-top: 1px solid #e6eef7;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 1rem;
             flex-wrap: wrap;
         }
+        .project-actions {
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+        }
 
+        /* TOAST */
         .toast-msg {
             position: fixed;
             bottom: 24px;
@@ -532,9 +575,11 @@
             transition: all 0.25s;
             pointer-events: none;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            letter-spacing: 0.3px;
         }
         .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(-5px); }
 
+        /* LAYOUT PREVIEW BADGES */
         .layout-badge {
             display: inline-flex;
             align-items: center;
@@ -548,6 +593,7 @@
             margin-left: 8px;
         }
 
+        /* RESPONSIVE */
         @media (max-width: 900px) {
             body { padding: 1rem; }
             .toolbar { flex-direction: column; align-items: stretch; padding: 1rem 1.5rem; }
@@ -556,6 +602,8 @@
             .logo-row-handle { left: -30px; width: 24px; height: 40px; }
             .row-controls { right: -34px; }
             .logo-controls-panel { justify-content: center; }
+            .export-actions { flex-direction: column; align-items: center; }
+            .project-actions { justify-content: center; }
         }
         @media (max-width: 600px) {
             .logo-strip-title { flex-direction: column; align-items: flex-start; }
@@ -563,28 +611,42 @@
             .export-actions { justify-content: center; }
         }
 
-        /* ELEMENTS TO HIDE DURING EXPORT - using CSS class */
-        .no-export { display: none !important; }
-        
-        /* Export preparation: convert to absolute positioning */
-        .export-ready .logo-row {
-            display: block !important;
-            position: relative !important;
-            height: auto !important;
+        /* ELEMENTS TO HIDE DURING EXPORT */
+        .no-export,
+        .logo-delete-badge,
+        .logo-size-control,
+        .logo-row-handle,
+        .row-controls,
+        .empty-logos-message {
+            /* Will be filtered via ignoreElements */
         }
-        .export-ready .free-logo-item {
-            position: absolute !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            transform: none !important; /* Bake transforms into left/top */
+        
+        /* Auto-save indicator */
+        .auto-save-indicator {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-left: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .auto-save-indicator.saved {
+            color: #059669;
+        }
+        .auto-save-indicator.saving {
+            color: #f59e0b;
+            animation: pulse 1s infinite;
         }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <div class="toolbar">
+    <div class="toolbar no-export">
         <div class="brand">
-            <h2>🎨 PosterCanvas Pro <span class="layout-badge">✨ Pixel-Perfect</span></h2>
+            <h2>🎨 PosterCanvas Pro <span class="layout-badge">✨ Smart Layouts</span></h2>
+            <div class="auto-save-indicator" id="autoSaveIndicator">
+                <span>🗄️</span><span id="autoSaveText">Auto-saved</span>
+            </div>
         </div>
         <div class="upload-controls">
             <label class="btn btn-outline">
@@ -598,6 +660,19 @@
             <button class="btn btn-dice" id="diceBtn" title="Shuffle logos with smart patterns">
                 🎲 Dice Shuffle
             </button>
+            <div style="width:1px;height:24px;background:#e2e8f0;margin:0 0.5rem;"></div>
+            <label class="btn btn-save">
+                💾 Save
+                <input type="file" id="saveProjectTrigger" accept=".pcproj" hidden>
+            </label>
+            <label class="btn btn-load">
+                📂 Load
+                <input type="file" id="loadProjectInput" accept=".pcproj,image/*,.pdf" hidden>
+            </label>
+            <button class="btn btn-outline" id="autoSaveToggle" title="Toggle auto-save">
+                🗄️ Auto: <span id="autoSaveStatus">ON</span>
+            </button>
+            <button class="btn btn-outline" id="clearProjectBtn" title="Clear all">🗑️ Clear</button>
         </div>
     </div>
 
@@ -605,15 +680,18 @@
         <div class="poster-canvas-area" id="posterCaptureArea">
             <!-- MAIN POSTER -->
             <div class="main-image-container">
-                <img id="mainPosterImg" src="https://placehold.co/1200x500/f8fafc/3b82f6?text=✨+Your+Poster+Here" alt="main poster">
+                <img id="mainPosterImg" src="" alt="main poster" style="display:none;">
+                <div class="main-image-placeholder" id="mainPosterPlaceholder">
+                    🖼️ Upload a poster image or load a project to get started
+                </div>
             </div>
             
-            <!-- LOGO STUDIO -->
+            <!-- LOGO STUDIO - Beautiful, Export-Ready -->
             <div class="logo-playground">
-                <div class="logo-strip-title">
+                <div class="logo-strip-title no-export">
                     <div class="title-section">
-                        <h4>🎯 Logo Studio — Free Positioning + Exact Export</h4>
-                        <p>Drag logos freely left/right • Positions saved & exported perfectly</p>
+                        <h4>🎯 Logo Studio — Smart Arrangement + Dice Shuffle</h4>
+                        <p>Drag logos freely • Use 🎲 for creative layouts • Export clean designs</p>
                     </div>
                     <div class="logo-controls-panel">
                         <div class="size-control">
@@ -628,7 +706,8 @@
                                 <option value="arc">Elegant Arc</option>
                                 <option value="wave">Dynamic Wave</option>
                                 <option value="cluster">Creative Cluster</option>
-                                <option value="free">✋ Free Position</option>
+                                <option value="masonry">Masonry Mix</option>
+                                <option value="random">🎲 Random Scatter</option>
                             </select>
                         </div>
                         <div class="arrange-buttons">
@@ -640,9 +719,6 @@
                             <button id="addRowBtn" class="icon-btn" title="Add Row">➕</button>
                             <button id="resetLayoutBtn" class="icon-btn" title="Reset Layout">🔄</button>
                         </div>
-                        <label class="toggle-guides">
-                            <input type="checkbox" id="showGuides"> Guides
-                        </label>
                     </div>
                 </div>
                 
@@ -653,9 +729,14 @@
         </div>
     </div>
 
-    <div class="export-actions">
-        <button class="btn btn-outline" id="exportPngBtn">📸 Export PNG</button>
-        <button class="btn btn-primary" id="exportPdfBtn">📑 Export PDF</button>
+    <div class="export-actions no-export">
+        <div class="project-actions">
+            <button class="btn btn-outline" id="exportPngBtn">📸 Export PNG</button>
+            <button class="btn btn-primary" id="exportPdfBtn">📑 Export PDF</button>
+        </div>
+        <div style="font-size:0.8rem;color:#64748b;">
+            💡 Tip: Save your project (.pcproj) to continue editing later
+        </div>
     </div>
 </div>
 <div id="toastMsg" class="toast-msg">✓ Ready</div>
@@ -664,6 +745,7 @@
     // ========== DOM ELEMENTS ==========
     const mainImageInput = document.getElementById('mainImageUpload');
     const mainPosterImg = document.getElementById('mainPosterImg');
+    const mainPosterPlaceholder = document.getElementById('mainPosterPlaceholder');
     const logoUploadInput = document.getElementById('logoUpload');
     const logoRowsContainer = document.getElementById('logoRowsContainer');
     const exportPngBtn = document.getElementById('exportPngBtn');
@@ -678,26 +760,33 @@
     const arrangeRightBtn = document.getElementById('arrangeRightBtn');
     const resetLayoutBtn = document.getElementById('resetLayoutBtn');
     const addRowBtn = document.getElementById('addRowBtn');
-    const showGuidesCheckbox = document.getElementById('showGuides');
+    const saveProjectTrigger = document.getElementById('saveProjectTrigger');
+    const loadProjectInput = document.getElementById('loadProjectInput');
+    const autoSaveToggle = document.getElementById('autoSaveToggle');
+    const autoSaveStatus = document.getElementById('autoSaveStatus');
+    const clearProjectBtn = document.getElementById('clearProjectBtn');
+    const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+    const autoSaveText = document.getElementById('autoSaveText');
 
     // ========== DATA STORE ==========
-    let logosData = []; // { id, url, customWidth, rowId, horizontalOffset, orderIndex }
+    let logosData = []; // { id, url, customWidth, rowId, orderIndex, base64 }
     let rowsData = [{ id: 'row-1', alignment: 'flex-start', layout: 'balanced' }];
+    let mainPosterData = { url: '', base64: '' };
     let sortableRowsInstance = null;
     let sortableLogoInstances = {};
-    let isDragging = false;
-    let dragStartX = 0;
-    let draggedLogo = null;
-    let showGuides = false;
+    let autoSaveEnabled = true;
+    let autoSaveTimeout = null;
+    const PROJECT_STORAGE_KEY = 'posterCanvas_project_v2';
 
     // ========== LAYOUT PRESETS ==========
     const LAYOUT_PRESETS = {
         balanced: { gap: '1.8rem 2.2rem', justify: 'flex-start', style: 'flow' },
-        grid: { gap: '2rem 2.5rem', justify: 'flex-start', style: 'grid' },
+        grid: { gap: '2rem 2.5rem', justify: 'flex-start', style: 'grid', columns: 'auto-fill' },
         arc: { gap: '1.5rem 2rem', justify: 'center', style: 'arc', curve: 0.3 },
         wave: { gap: '1.6rem 2.1rem', justify: 'space-around', style: 'wave', amplitude: 15 },
         cluster: { gap: '1.2rem 1.8rem', justify: 'center', style: 'cluster', density: 1.2 },
-        free: { gap: '1rem', justify: 'flex-start', style: 'free' } // Free positioning mode
+        masonry: { gap: '1.8rem 2rem', justify: 'space-between', style: 'masonry' },
+        random: { gap: '1.5rem 3rem', justify: 'space-evenly', style: 'scatter', randomness: 0.4 }
     };
 
     // ========== UTILITIES ==========
@@ -720,59 +809,352 @@
         return newArr;
     }
 
+    // Convert blob URL to base64 for saving
+    async function blobUrlToBase64(blobUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = reject;
+            img.src = blobUrl;
+        });
+    }
+
+    // Convert base64 to blob URL for loading
+    function base64ToBlobUrl(base64, mimeType = 'image/png') {
+        const byteString = atob(base64.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: mimeType });
+        return URL.createObjectURL(blob);
+    }
+
+    // ========== AUTO-SAVE SYSTEM ==========
+    function triggerAutoSave() {
+        if (!autoSaveEnabled) return;
+        
+        autoSaveIndicator.classList.remove('saved');
+        autoSaveIndicator.classList.add('saving');
+        autoSaveText.textContent = 'Saving...';
+        
+        if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            saveToLocalStorage();
+            autoSaveIndicator.classList.remove('saving');
+            autoSaveIndicator.classList.add('saved');
+            autoSaveText.textContent = 'Saved';
+            setTimeout(() => {
+                autoSaveIndicator.classList.remove('saved');
+                autoSaveText.textContent = 'Auto-saved';
+            }, 3000);
+        }, 1000);
+    }
+
+    function saveToLocalStorage() {
+        try {
+            const projectData = {
+                version: '2.0',
+                timestamp: Date.now(),
+                mainPoster: mainPosterData,
+                logos: logosData.map(logo => ({
+                    ...logo,
+                    // Store base64 for persistence
+                    base64: logo.base64 || (logo.url?.startsWith('blob:') ? null : logo.url)
+                })),
+                rows: rowsData,
+                settings: {
+                    globalLogoSize: globalLogoSizeInput.value,
+                    layoutPreset: layoutPresetSelect.value
+                }
+            };
+            localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(projectData));
+        } catch (e) {
+            console.warn('Auto-save failed (storage full?):', e);
+            showToast('⚠️ Auto-save failed - storage may be full', 2500);
+        }
+    }
+
+    function loadFromLocalStorage() {
+        try {
+            const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
+            if (!saved) return false;
+            const projectData = JSON.parse(saved);
+            return loadProjectData(projectData, false); // silent load
+        } catch (e) {
+            console.warn('Failed to load auto-saved project:', e);
+            return false;
+        }
+    }
+
+    function clearLocalStorage() {
+        localStorage.removeItem(PROJECT_STORAGE_KEY);
+    }
+
+    // ========== PROJECT SAVE/LOAD ==========
+    async function saveProjectToFile() {
+        showToast('Preparing project save... 💾', 1500);
+        
+        // Convert blob URLs to base64 for all images
+        const logosWithBase64 = await Promise.all(logosData.map(async (logo) => {
+            if (logo.url?.startsWith('blob:') && !logo.base64) {
+                try {
+                    logo.base64 = await blobUrlToBase64(logo.url);
+                } catch (e) {
+                    console.warn('Could not convert logo to base64:', logo.id);
+                }
+            }
+            return logo;
+        }));
+        
+        // Convert main poster if needed
+        if (mainPosterData.url?.startsWith('blob:') && !mainPosterData.base64) {
+            try {
+                mainPosterData.base64 = await blobUrlToBase64(mainPosterData.url);
+            } catch (e) {
+                console.warn('Could not convert main poster to base64');
+            }
+        }
+        
+        const projectData = {
+            version: '2.0',
+            timestamp: Date.now(),
+            projectName: `PosterCanvas_Project_${new Date().toISOString().slice(0,10)}`,
+            mainPoster: mainPosterData,
+            logos: logosWithBase64,
+            rows: rowsData,
+            settings: {
+                globalLogoSize: globalLogoSizeInput.value,
+                layoutPreset: layoutPresetSelect.value
+            }
+        };
+        
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `poster_project_${Date.now()}.pcproj`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast('✅ Project saved! (.pcproj file)', 2500);
+    }
+
+    async function loadProjectFromFile(file) {
+        if (!file) return;
+        
+        // Handle PNG/PDF as reference image only
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+            showToast('📄 PDF loaded as reference - set as main poster', 2000);
+            // For PDFs, we can only show a placeholder since we can't parse them client-side easily
+            mainPosterPlaceholder.textContent = '📄 PDF Reference Loaded\n(Use "Export PDF" to generate new version)';
+            mainPosterPlaceholder.style.display = 'block';
+            mainPosterImg.style.display = 'none';
+            mainPosterData = { url: '', base64: '', fileName: file.name, type: 'pdf' };
+            triggerAutoSave();
+            return;
+        }
+        
+        if (file.type.startsWith('image/') && !file.name.endsWith('.pcproj')) {
+            // Load as main poster reference
+            const reader = new FileReader();
+            reader.onload = e => {
+                mainPosterImg.src = e.target.result;
+                mainPosterImg.style.display = 'block';
+                mainPosterPlaceholder.style.display = 'none';
+                mainPosterData = { url: e.target.result, base64: e.target.result, fileName: file.name };
+                showToast('🖼️ Image loaded as poster reference', 1500);
+                triggerAutoSave();
+            };
+            reader.readAsDataURL(file);
+            return;
+        }
+        
+        // Handle .pcproj project files
+        if (!file.name.endsWith('.pcproj')) {
+            showToast('Please select a .pcproj project file', 2000);
+            return;
+        }
+        
+        showToast('Loading project... 📂', 1500);
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const projectData = JSON.parse(e.target.result);
+                const success = await loadProjectData(projectData);
+                if (success) {
+                    showToast('✅ Project loaded! Continue editing 🎨', 2500);
+                }
+            } catch (err) {
+                console.error('Load error:', err);
+                showToast('❌ Failed to load project file', 2500);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    async function loadProjectData(projectData, showSuccess = true) {
+        try {
+            // Restore settings
+            if (projectData.settings) {
+                globalLogoSizeInput.value = projectData.settings.globalLogoSize || 85;
+                layoutPresetSelect.value = projectData.settings.layoutPreset || 'balanced';
+            }
+            
+            // Restore main poster
+            if (projectData.mainPoster?.base64) {
+                mainPosterImg.src = projectData.mainPoster.base64;
+                mainPosterImg.style.display = 'block';
+                mainPosterPlaceholder.style.display = 'none';
+                mainPosterData = { 
+                    url: projectData.mainPoster.base64, 
+                    base64: projectData.mainPoster.base64 
+                };
+            } else if (projectData.mainPoster?.url) {
+                mainPosterImg.src = projectData.mainPoster.url;
+                mainPosterImg.style.display = 'block';
+                mainPosterPlaceholder.style.display = 'none';
+                mainPosterData = { url: projectData.mainPoster.url };
+            }
+            
+            // Restore rows
+            rowsData = projectData.rows?.length ? projectData.rows : [{ id: 'row-1', alignment: 'flex-start', layout: 'balanced' }];
+            
+            // Restore logos (convert base64 back to blob URLs)
+            // First, revoke any existing blob URLs to prevent memory leaks
+            logosData.forEach(logo => {
+                if (logo.url?.startsWith('blob:')) {
+                    try { URL.revokeObjectURL(logo.url); } catch(e) {}
+                }
+            });
+            
+            logosData = (projectData.logos || []).map(logo => {
+                let displayUrl = logo.url;
+                if (logo.base64) {
+                    displayUrl = base64ToBlobUrl(logo.base64);
+                }
+                return {
+                    id: logo.id || `logo-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
+                    url: displayUrl,
+                    base64: logo.base64, // Keep base64 for future saves
+                    customWidth: logo.customWidth || 85,
+                    rowId: logo.rowId || rowsData[0]?.id,
+                    orderIndex: logo.orderIndex || 0
+                };
+            });
+            
+            // Re-render everything
+            renderAll();
+            
+            if (showSuccess) {
+                // Update UI indicators
+                autoSaveIndicator.classList.add('saved');
+                autoSaveText.textContent = 'Loaded';
+                setTimeout(() => {
+                    autoSaveIndicator.classList.remove('saved');
+                    autoSaveText.textContent = 'Auto-saved';
+                }, 3000);
+            }
+            
+            triggerAutoSave(); // Save loaded state
+            return true;
+        } catch (err) {
+            console.error('Error loading project data:', err);
+            return false;
+        }
+    }
+
+    function clearProject() {
+        if (!confirm('Clear all content and start fresh? This cannot be undone.')) return;
+        
+        // Revoke blob URLs
+        logosData.forEach(logo => {
+            if (logo.url?.startsWith('blob:')) {
+                try { URL.revokeObjectURL(logo.url); } catch(e) {}
+            }
+        });
+        if (mainPosterData.url?.startsWith('blob:')) {
+            try { URL.revokeObjectURL(mainPosterData.url); } catch(e) {}
+        }
+        
+        // Reset data
+        logosData = [];
+        rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
+        mainPosterData = { url: '', base64: '' };
+        mainPosterImg.src = '';
+        mainPosterImg.style.display = 'none';
+        mainPosterPlaceholder.style.display = 'block';
+        mainPosterPlaceholder.textContent = '🖼️ Upload a poster image or load a project to get started';
+        
+        // Reset UI
+        globalLogoSizeInput.value = 85;
+        layoutPresetSelect.value = 'balanced';
+        
+        renderAll();
+        clearLocalStorage();
+        showToast('🗑️ Project cleared - ready for new design', 2000);
+    }
+
     // ========== ROW CREATION ==========
     function createRowElement(rowId, rowConfig) {
         const rowEl = document.createElement('div');
         rowEl.className = 'logo-row';
         rowEl.setAttribute('data-row-id', rowId);
         
+        // Apply layout preset styles
         const preset = LAYOUT_PRESETS[rowConfig.layout] || LAYOUT_PRESETS.balanced;
         rowEl.style.gap = preset.gap;
         rowEl.style.justifyContent = rowConfig.alignment || preset.justify;
-        
         if (preset.style === 'grid') {
             rowEl.style.display = 'grid';
-            rowEl.style.gridTemplateColumns = 'repeat(auto-fill, minmax(80px, 1fr))';
-        } else if (preset.style === 'free') {
-            rowEl.style.display = 'flex';
-            rowEl.style.flexWrap = 'wrap';
-            rowEl.style.alignItems = 'center';
+            rowEl.style.gridTemplateColumns = `repeat(${preset.columns || 'auto-fill'}, minmax(80px, 1fr))`;
         }
         
-        // Decorative accent
+        // Decorative top accent (export-safe)
         const accent = document.createElement('div');
         accent.style.cssText = 'position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);border-radius:28px 28px 0 0;opacity:0.7;pointer-events:none;';
         rowEl.appendChild(accent);
         
-        // Drag handle
+        // Drag handle (hidden in export)
         const handle = document.createElement('div');
         handle.className = 'logo-row-handle no-export';
         handle.innerHTML = '<div></div><div></div><div></div>';
         handle.title = 'Drag to reorder rows';
         rowEl.appendChild(handle);
         
-        // Row controls
+        // Row controls (hidden in export)
         const controls = document.createElement('div');
         controls.className = 'row-controls no-export';
-        controls.innerHTML = `<div class="row-control-btn" title="Duplicate row">📋</div><div class="row-control-btn danger" title="Remove row">🗑️</div>`;
-        controls.querySelector('.danger').addEventListener('click', (e) => { e.stopPropagation(); removeRow(rowId); });
-        controls.querySelector('.row-control-btn:not(.danger)').addEventListener('click', (e) => { e.stopPropagation(); duplicateRow(rowId); });
+        controls.innerHTML = `
+            <div class="row-control-btn" title="Duplicate row">📋</div>
+            <div class="row-control-btn danger" title="Remove row">🗑️</div>
+        `;
+        controls.querySelector('.danger').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeRow(rowId);
+        });
+        controls.querySelector('.row-control-btn:not(.danger)').addEventListener('click', (e) => {
+            e.stopPropagation();
+            duplicateRow(rowId);
+        });
         rowEl.appendChild(controls);
-        
-        // Alignment guides (toggleable)
-        if (showGuides) {
-            ['left', 'center', 'right'].forEach(pos => {
-                const guide = document.createElement('div');
-                guide.className = `alignment-guide ${pos}`;
-                guide.setAttribute('data-guide', pos);
-                rowEl.appendChild(guide);
-            });
-        }
         
         // Logo container
         const logosContainer = document.createElement('div');
         logosContainer.className = 'row-logos-container';
-        logosContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:inherit;align-items:center;width:100%;position:relative;z-index:1;min-height:60px;';
+        logosContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:inherit;align-items:center;width:100%;position:relative;z-index:1;';
         rowEl.appendChild(logosContainer);
         
         return rowEl;
@@ -787,7 +1169,7 @@
             rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
         }
         
-        rowsData.forEach(row => {
+        rowsData.forEach((row, rowIndex) => {
             const rowEl = createRowElement(row.id, row);
             const logosContainer = rowEl.querySelector('.row-logos-container');
             const rowLogos = logosData.filter(logo => logo.rowId === row.id)
@@ -799,62 +1181,50 @@
                 emptyMsg.innerHTML = '✨ Drop logos here or click <strong>➕ Logos</strong> above';
                 logosContainer.appendChild(emptyMsg);
             } else {
+                // Apply layout-specific positioning
                 rowLogos.forEach((logo, idx) => {
-                    const logoWrapper = createLogoElement(logo, row, idx);
+                    const logoWrapper = createLogoElement(logo, row, idx, rowLogos.length);
                     logosContainer.appendChild(logoWrapper);
                 });
                 
-                // Apply layout transforms AFTER elements are in DOM
-                setTimeout(() => applyLayoutTransforms(rowEl, rowLogos, row.layout), 30);
+                // Apply special layout transforms after render
+                setTimeout(() => applyLayoutTransforms(rowEl, rowLogos, row.layout), 50);
             }
             
             logoRowsContainer.appendChild(rowEl);
             
-            // Initialize Sortable for logos
+            // Initialize Sortable for logos in this row
             if (sortableLogoInstances[row.id]) sortableLogoInstances[row.id].destroy();
-            
-            // Only enable Sortable for non-free layouts (free mode uses manual drag)
-            if (row.layout !== 'free') {
-                sortableLogoInstances[row.id] = new Sortable(logosContainer, {
-                    group: 'logos',
-                    animation: 200,
-                    handle: '.free-logo-item',
-                    draggable: '.free-logo-item',
-                    onEnd: (evt) => handleLogoMove(evt, row.id)
-                });
-            }
+            sortableLogoInstances[row.id] = new Sortable(logosContainer, {
+                group: 'logos',
+                animation: 220,
+                handle: '.free-logo-item',
+                draggable: '.free-logo-item',
+                ghostClass: 'sortable-ghost',
+                onEnd: (evt) => handleLogoMove(evt, row.id)
+            });
         });
         
-        // Row reordering
+        // Initialize row reordering
         if (sortableRowsInstance) sortableRowsInstance.destroy();
         sortableRowsInstance = new Sortable(logoRowsContainer, {
-            animation: 200,
+            animation: 220,
             handle: '.logo-row-handle',
             draggable: '.logo-row',
+            ghostClass: 'sortable-ghost-row',
             onEnd: updateRowsOrder
         });
-        
-        // Setup free positioning drag handlers if in free mode
-        if (layoutPresetSelect.value === 'free') {
-            setupFreePositioning();
-        }
     }
 
-    function createLogoElement(logo, rowConfig, index) {
+    function createLogoElement(logo, rowConfig, index, totalInRow) {
         const wrapper = document.createElement('div');
         wrapper.className = 'free-logo-item';
         wrapper.setAttribute('data-id', logo.id);
         wrapper.setAttribute('data-row-id', logo.rowId);
         
-        // Apply stored horizontal offset for free positioning
-        const offset = logo.horizontalOffset || 0;
-        if (offset !== 0) {
-            wrapper.style.transform = `translateX(${offset}px)`;
-        }
-        
         const img = document.createElement('img');
         const size = logo.customWidth || 85;
-        img.style.cssText = `width:${size}px;height:auto;max-height:250px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.12));pointer-events:none;`;
+        img.style.cssText = `width:${size}px;height:auto;max-height:250px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.12));`;
         img.src = logo.url;
         img.alt = `logo-${index}`;
         img.setAttribute('crossorigin', 'anonymous');
@@ -877,125 +1247,17 @@
             logo.customWidth = val;
             img.style.width = `${val}px`;
             showToast(`Resized to ${val}px`, 1000);
+            triggerAutoSave();
         });
         
         wrapper.appendChild(img);
         wrapper.appendChild(delBtn);
         wrapper.appendChild(sizeCtrl);
-        
         return wrapper;
     }
 
-    // ========== FREE POSITIONING DRAG LOGIC ==========
-    function setupFreePositioning() {
-        document.querySelectorAll('.free-logo-item').forEach(item => {
-            item.style.cursor = 'grab';
-            item.addEventListener('mousedown', startDrag);
-            item.addEventListener('touchstart', startDrag, { passive: false });
-        });
-        
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('touchmove', onDrag, { passive: false });
-        document.addEventListener('mouseup', endDrag);
-        document.addEventListener('touchend', endDrag);
-    }
-
-    function startDrag(e) {
-        if (layoutPresetSelect.value !== 'free') return;
-        
-        e.preventDefault();
-        isDragging = true;
-        draggedLogo = e.currentTarget;
-        draggedLogo.classList.add('dragging');
-        
-        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-        dragStartX = clientX;
-        
-        // Store initial offset
-        const logoId = draggedLogo.getAttribute('data-id');
-        const logo = logosData.find(l => l.id === logoId);
-        if (logo) {
-            draggedLogo.dataset.initialOffset = logo.horizontalOffset || 0;
-        }
-        
-        // Bring to front
-        draggedLogo.style.zIndex = '100';
-    }
-
-    function onDrag(e) {
-        if (!isDragging || !draggedLogo || layoutPresetSelect.value !== 'free') return;
-        e.preventDefault();
-        
-        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-        const deltaX = clientX - dragStartX;
-        const initialOffset = parseInt(draggedLogo.dataset.initialOffset) || 0;
-        const newOffset = initialOffset + deltaX;
-        
-        // Apply visual transform
-        draggedLogo.style.transform = `translateX(${newOffset}px)`;
-        
-        // Show alignment guides if enabled
-        if (showGuides) {
-            updateGuides(draggedLogo, newOffset);
-        }
-    }
-
-    function updateGuides(logoEl, offset) {
-        const rowEl = logoEl.closest('.logo-row');
-        if (!rowEl) return;
-        
-        const rowRect = rowEl.getBoundingClientRect();
-        const logoRect = logoEl.getBoundingClientRect();
-        const logoCenter = logoRect.left + logoRect.width / 2 - rowRect.left;
-        const rowWidth = rowRect.width;
-        
-        // Highlight nearest guide
-        rowEl.querySelectorAll('.alignment-guide').forEach(guide => {
-            guide.classList.remove('active');
-        });
-        
-        const thresholds = [
-            { pos: 'left', value: rowWidth * 0.15 },
-            { pos: 'center', value: rowWidth / 2 },
-            { pos: 'right', value: rowWidth * 0.85 }
-        ];
-        
-        let nearest = thresholds.reduce((prev, curr) => 
-            Math.abs(curr.value - logoCenter) < Math.abs(prev.value - logoCenter) ? curr : prev
-        );
-        
-        if (Math.abs(nearest.value - logoCenter) < 30) {
-            rowEl.querySelector(`.alignment-guide.${nearest.pos}`).classList.add('active');
-        }
-    }
-
-    function endDrag() {
-        if (!isDragging || !draggedLogo) return;
-        
-        isDragging = false;
-        draggedLogo.classList.remove('dragging');
-        draggedLogo.style.zIndex = '';
-        
-        // Save the new offset to data
-        const logoId = draggedLogo.getAttribute('data-id');
-        const logo = logosData.find(l => l.id === logoId);
-        if (logo) {
-            const transform = draggedLogo.style.transform;
-            const match = transform.match(/translateX\(([-\d.]+)px\)/);
-            logo.horizontalOffset = match ? parseFloat(match[1]) : 0;
-            showToast('Position saved ✓', 1000);
-        }
-        
-        // Hide guides
-        document.querySelectorAll('.alignment-guide').forEach(g => g.classList.remove('active'));
-        
-        draggedLogo = null;
-    }
-
-    // ========== SMART LAYOUT TRANSFORMS (for non-free modes) ==========
+    // ========== SMART LAYOUT TRANSFORMS ==========
     function applyLayoutTransforms(rowEl, logos, layoutType) {
-        if (layoutType === 'free') return; // Free mode uses manual positioning
-        
         const logoElements = rowEl.querySelectorAll('.free-logo-item');
         if (!logoElements.length) return;
         
@@ -1009,11 +1271,17 @@
             case 'cluster':
                 applyClusterLayout(logoElements, 1.15);
                 break;
-            case 'grid':
-            case 'balanced':
-            default:
-                // No extra transforms needed
+            case 'random':
+            case 'scatter':
+                applyScatterLayout(logoElements, 0.35);
                 break;
+            case 'grid':
+                applyGridLayout(logoElements);
+                break;
+            case 'masonry':
+                applyMasonryLayout(logoElements);
+                break;
+            // 'balanced' uses default flow
         }
     }
 
@@ -1023,6 +1291,7 @@
             const progress = i / (total - 1 || 1);
             const arcOffset = Math.sin(progress * Math.PI) * 30 * curveIntensity;
             el.style.transform = `translateY(${-arcOffset}px)`;
+            el.style.transition = 'transform 0.3s ease';
         });
     }
 
@@ -1030,32 +1299,70 @@
         elements.forEach((el, i) => {
             const waveOffset = Math.sin(i * 0.8) * amplitude;
             el.style.transform = `translateY(${waveOffset}px)`;
+            el.style.transition = 'transform 0.3s ease';
         });
     }
 
     function applyClusterLayout(elements, density) {
+        const centerX = 50;
         elements.forEach((el, i) => {
             const angle = (i / elements.length) * Math.PI * 2;
             const radius = 30 * density;
             const offsetX = Math.cos(angle) * radius;
             const offsetY = Math.sin(angle) * radius * 0.4;
             el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${0.95 + Math.random() * 0.1})`;
+            el.style.transition = 'transform 0.4s ease';
         });
     }
 
-    // ========== DICE SHUFFLE ==========
+    function applyScatterLayout(elements, randomness) {
+        elements.forEach(el => {
+            const rotate = randomBetween(-8, 8);
+            const offsetX = randomBetween(-15 * randomness, 15 * randomness);
+            const offsetY = randomBetween(-10 * randomness, 10 * randomness);
+            const scale = 0.92 + Math.random() * 0.16;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotate}deg) scale(${scale})`;
+            el.style.transition = 'transform 0.35s ease';
+        });
+    }
+
+    function applyGridLayout(elements) {
+        elements.forEach(el => {
+            el.style.flex = '0 0 auto';
+        });
+    }
+
+    function applyMasonryLayout(elements) {
+        elements.forEach((el, i) => {
+            const img = el.querySelector('img');
+            if (img) {
+                const heightVar = 80 + (i % 3) * 15;
+                img.style.maxHeight = `${heightVar}px`;
+            }
+            el.style.marginBottom = `${(i % 2) * 8}px`;
+        });
+    }
+
+    // ========== DICE SHUFFLE FEATURE ==========
     function diceShuffle() {
-        if (logosData.length < 2) { showToast('Add more logos to shuffle! 🎲', 1500); return; }
+        if (logosData.length < 2) {
+            showToast('Add more logos to shuffle! 🎲', 1500);
+            return;
+        }
         
+        // Animate dice button
         diceBtn.style.animation = 'pulse 0.15s infinite';
         setTimeout(() => diceBtn.style.animation = '', 600);
         
-        const layouts = ['arc', 'wave', 'cluster', 'balanced'];
+        // Pick random layout
+        const layouts = ['arc', 'wave', 'cluster', 'random', 'masonry'];
         const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
         
+        // Shuffle logos between rows
         const shuffledLogos = shuffleArray([...logosData]);
-        const numRows = Math.min(3, Math.max(1, Math.ceil(shuffledLogos.length / 5)));
         
+        // Redistribute across rows (1-3 rows based on count)
+        const numRows = Math.min(3, Math.max(1, Math.ceil(shuffledLogos.length / 5)));
         rowsData = [];
         for (let i = 0; i < numRows; i++) {
             rowsData.push({
@@ -1065,15 +1372,17 @@
             });
         }
         
+        // Assign logos to rows
         shuffledLogos.forEach((logo, idx) => {
             logo.rowId = rowsData[idx % rowsData.length].id;
             logo.orderIndex = Math.floor(idx / rowsData.length);
-            logo.horizontalOffset = 0; // Reset free positioning on shuffle
         });
         
+        // Update UI
         layoutPresetSelect.value = randomLayout;
         renderAll();
         showToast(`🎲 ${randomLayout.toUpperCase()} layout applied!`, 2200);
+        triggerAutoSave();
     }
 
     // ========== DATA OPERATIONS ==========
@@ -1083,6 +1392,7 @@
         logosData.forEach(logo => logo.customWidth = newSize);
         renderAll();
         showToast(`Size: ${newSize}px ✨`, 1200);
+        triggerAutoSave();
     }
 
     function setGlobalAlignment(align) {
@@ -1092,20 +1402,18 @@
         });
         renderAll();
         showToast(`Alignment: ${align} ✓`, 1000);
+        triggerAutoSave();
     }
 
     function setLayoutPreset(presetName) {
-        // Reset horizontal offsets when switching away from free mode
-        if (presetName !== 'free') {
-            logosData.forEach(logo => logo.horizontalOffset = 0);
-        }
         rowsData.forEach(row => row.layout = presetName);
         renderAll();
         showToast(`Layout: ${presetName} 🎨`, 1300);
+        triggerAutoSave();
     }
 
     function addNewRow() {
-        const presets = Object.keys(LAYOUT_PRESETS).filter(p => p !== 'free');
+        const presets = Object.keys(LAYOUT_PRESETS);
         const randomPreset = presets[Math.floor(Math.random() * presets.length)];
         rowsData.push({
             id: `row-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
@@ -1114,6 +1422,7 @@
         });
         renderAll();
         showToast('New row added ✨', 1200);
+        triggerAutoSave();
     }
 
     function duplicateRow(rowId) {
@@ -1127,30 +1436,36 @@
             layout: sourceRow.layout
         });
         
+        // Copy logos to new row
         logosData.filter(l => l.rowId === rowId).forEach(logo => {
             logosData.push({
                 ...logo,
                 id: `${logo.id}-copy-${Date.now()}`,
-                rowId: newRowId
+                rowId: newRowId,
+                url: logo.url // Reuse blob URL
             });
         });
         
         renderAll();
         showToast('Row duplicated 📋', 1300);
+        triggerAutoSave();
     }
 
     function removeRow(rowId) {
+        // Remove logos in this row
         logosData.filter(l => l.rowId === rowId).forEach(logo => {
             if (logo.url?.startsWith('blob:')) URL.revokeObjectURL(logo.url);
         });
         logosData = logosData.filter(l => l.rowId !== rowId);
         rowsData = rowsData.filter(r => r.id !== rowId);
         
+        // Ensure at least one row
         if (rowsData.length === 0) {
             rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
         }
         renderAll();
         showToast('Row removed', 1000);
+        triggerAutoSave();
     }
 
     function removeLogoById(id) {
@@ -1161,6 +1476,7 @@
         if (logo.url?.startsWith('blob:')) URL.revokeObjectURL(logo.url);
         logosData.splice(idx, 1);
         
+        // Remove row if empty and not the last one
         const rowHasLogos = logosData.some(l => l.rowId === logo.rowId);
         if (!rowHasLogos && rowsData.length > 1) {
             rowsData = rowsData.filter(r => r.id !== logo.rowId);
@@ -1168,6 +1484,7 @@
         
         renderAll();
         showToast('Logo removed ✓', 1000);
+        triggerAutoSave();
     }
 
     function handleLogoMove(evt, sourceRowId) {
@@ -1182,7 +1499,8 @@
                 logo.rowId = newRowId;
                 item.setAttribute('data-row-id', newRowId);
                 showToast('Logo moved to new row ↕️', 1000);
-                renderAll();
+                renderAll(); // Re-render to apply new row's layout
+                triggerAutoSave();
             }
         }
     }
@@ -1197,6 +1515,7 @@
         if (newOrder.length === rowsData.length) {
             rowsData = newOrder;
             showToast('Row order updated ↕️', 1000);
+            triggerAutoSave();
         }
     }
 
@@ -1218,121 +1537,83 @@
                 url: blobUrl,
                 customWidth: parseInt(globalLogoSizeInput.value) || 85,
                 rowId: rowId,
-                orderIndex: logosData.filter(l => l.rowId === rowId).length,
-                horizontalOffset: 0
+                orderIndex: logosData.filter(l => l.rowId === rowId).length
             });
         });
         
         renderAll();
         showToast(`Added ${valid.length} logo${valid.length>1?'s':''} ✨`, 1500);
+        triggerAutoSave();
     }
 
     function setMainPoster(file) {
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = e => { mainPosterImg.src = e.target.result; showToast('Poster updated 🖼️', 1300); };
+        reader.onload = e => { 
+            mainPosterImg.src = e.target.result;
+            mainPosterImg.style.display = 'block';
+            mainPosterPlaceholder.style.display = 'none';
+            mainPosterData = { url: e.target.result, base64: e.target.result };
+            showToast('Poster updated 🖼️', 1300);
+            triggerAutoSave();
+        };
         reader.readAsDataURL(file);
     }
 
-    // ========== EXPORT: PIXEL-PERFECT CAPTURE ==========
-    async function prepareForExport() {
-        // Create a clone of the capture area for export preparation
-        const clone = captureArea.cloneNode(true);
-        clone.classList.add('export-ready');
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '-9999px';
-        clone.style.width = captureArea.offsetWidth + 'px';
-        document.body.appendChild(clone);
+    // ========== EXPORT FUNCTIONS - CLEAN CAPTURE ==========
+    async function captureFinalPoster(scale = 2.8) {
+        const originalOverflow = captureArea.style.overflow;
+        captureArea.style.overflow = 'visible';
         
-        // Hide all UI elements
-        clone.querySelectorAll('.no-export').forEach(el => el.remove());
-        
-        // Convert each row to absolute positioning with baked coordinates
-        const rows = clone.querySelectorAll('.logo-row');
-        rows.forEach(row => {
-            const rowRect = row.getBoundingClientRect();
-            const captureRect = captureArea.getBoundingClientRect();
-            const rowTop = rowRect.top - captureRect.top + captureArea.scrollTop;
-            
-            row.style.position = 'absolute';
-            row.style.left = '0';
-            row.style.top = `${rowTop}px`;
-            row.style.width = '100%';
-            row.style.height = 'auto';
-            row.style.display = 'block';
-            
-            // Convert logos to absolute positioning with baked transforms
-            const logos = row.querySelectorAll('.free-logo-item');
-            logos.forEach(logo => {
-                const logoRect = logo.getBoundingClientRect();
-                const logoLeft = logoRect.left - rowRect.left;
-                const logoTop = logoRect.top - rowRect.top;
-                
-                // Get stored offset from data
-                const logoId = logo.getAttribute('data-id');
-                const dataLogo = logosData.find(l => l.id === logoId);
-                const storedOffset = dataLogo?.horizontalOffset || 0;
-                
-                // Bake all transforms into left/top
-                logo.style.position = 'absolute';
-                logo.style.left = `${logoLeft + storedOffset}px`;
-                logo.style.top = `${logoTop}px`;
-                logo.style.transform = 'none';
-                logo.style.margin = '0';
-                logo.style.padding = '8px'; // Preserve visual padding
-            });
-        });
-        
-        return clone;
-    }
-
-    async function captureFinalPoster(scale = 3.0) {
         try {
-            // Prepare export-ready DOM
-            const exportClone = await prepareForExport();
-            
-            // Small delay to ensure styles apply
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const canvas = await html2canvas(exportClone, {
+            const canvas = await html2canvas(captureArea, {
                 scale: scale,
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 allowTaint: false,
                 logging: false,
-                foreignObjectRendering: true,
-                windowWidth: exportClone.scrollWidth,
-                windowHeight: exportClone.scrollHeight,
-                // No ignoreElements needed - we already removed UI elements
+                windowWidth: captureArea.scrollWidth,
+                windowHeight: captureArea.scrollHeight,
+                ignoreElements: (el) => {
+                    return el.classList?.contains('no-export') || 
+                           el.closest?.('.no-export') ||
+                           el.classList?.contains('logo-delete-badge') ||
+                           el.classList?.contains('logo-size-control') ||
+                           el.classList?.contains('logo-row-handle') ||
+                           el.classList?.contains('row-controls') ||
+                           el.classList?.contains('empty-logos-message') ||
+                           el.tagName === 'BUTTON' ||
+                           el.tagName === 'INPUT' ||
+                           el.tagName === 'SELECT' ||
+                           (el.parentElement?.classList?.contains('toolbar')) ||
+                           (el.parentElement?.classList?.contains('export-actions'));
+                }
             });
-            
-            // Cleanup
-            document.body.removeChild(exportClone);
             return canvas;
-            
         } catch (err) {
             console.error('Export error:', err);
             showToast('Export failed - try again', 1800);
             return null;
+        } finally {
+            captureArea.style.overflow = originalOverflow;
         }
     }
 
     async function exportAsPNG() {
-        showToast('Generating pixel-perfect PNG... 🎨', 1500);
-        const canvas = await captureFinalPoster(3.2);
+        showToast('Generating high-res PNG... 🎨', 1500);
+        const canvas = await captureFinalPoster(3.0);
         if (!canvas) return;
         
         const link = document.createElement('a');
         link.download = `poster_design_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
-        showToast('✅ PNG saved with exact layout!', 2000);
+        showToast('✅ PNG saved successfully!', 2000);
     }
 
     async function exportAsPDF() {
         showToast('Creating PDF document... 📄', 1500);
-        const canvas = await captureFinalPoster(3.4);
+        const canvas = await captureFinalPoster(3.2);
         if (!canvas) return;
         
         const imgData = canvas.toDataURL('image/png');
@@ -1353,7 +1634,7 @@
         
         pdf.addImage(imgData, 'PNG', (pageW - finalW)/2, (pageH - finalH)/2, finalW, finalH, undefined, 'MEDIUM');
         pdf.save(`poster_design_${Date.now()}.pdf`);
-        showToast('📄 PDF downloaded with exact layout!', 2200);
+        showToast('📄 PDF downloaded!', 2200);
     }
 
     // ========== EVENT LISTENERS ==========
@@ -1365,6 +1646,48 @@
         }
     });
     
+    // Project save/load handlers
+    saveProjectTrigger.addEventListener('change', e => {
+        if (e.target.files?.[0]) {
+            // This is a hidden trigger - we actually call saveProjectToFile directly
+            saveProjectToFile();
+            saveProjectTrigger.value = '';
+        }
+    });
+    
+    loadProjectInput.addEventListener('change', e => {
+        if (e.target.files?.[0]) {
+            loadProjectFromFile(e.target.files[0]);
+            loadProjectInput.value = '';
+        }
+    });
+    
+    // Direct button click handlers for save/load
+    document.querySelector('.btn-save').addEventListener('click', (e) => {
+        e.preventDefault();
+        saveProjectToFile();
+    });
+    
+    document.querySelector('.btn-load').addEventListener('click', (e) => {
+        e.preventDefault();
+        loadProjectInput.click();
+    });
+    
+    // Auto-save toggle
+    autoSaveToggle.addEventListener('click', () => {
+        autoSaveEnabled = !autoSaveEnabled;
+        autoSaveStatus.textContent = autoSaveEnabled ? 'ON' : 'OFF';
+        autoSaveStatus.style.color = autoSaveEnabled ? '#059669' : '#64748b';
+        showToast(autoSaveEnabled ? '✅ Auto-save enabled' : '⏸️ Auto-save paused', 1500);
+        if (autoSaveEnabled) {
+            saveToLocalStorage();
+            autoSaveIndicator.classList.add('saved');
+        }
+    });
+    
+    // Clear project
+    clearProjectBtn.addEventListener('click', clearProject);
+    
     globalLogoSizeInput.addEventListener('change', e => applyGlobalSize(parseInt(e.target.value)));
     layoutPresetSelect.addEventListener('change', e => setLayoutPreset(e.target.value));
     
@@ -1374,16 +1697,10 @@
     
     diceBtn.addEventListener('click', diceShuffle);
     addRowBtn.addEventListener('click', addNewRow);
-    resetLayoutBtn.addEventListener('click', () => { renderAll(); showToast('Layout reset 🔄', 1000); });
+    resetLayoutBtn.addEventListener('click', () => { renderAll(); showToast('Layout reset 🔄', 1000); triggerAutoSave(); });
     
     exportPngBtn.addEventListener('click', exportAsPNG);
     exportPdfBtn.addEventListener('click', exportAsPDF);
-    
-    showGuidesCheckbox.addEventListener('change', (e) => {
-        showGuides = e.target.checked;
-        renderAll(); // Re-render to add/remove guides
-        showToast(showGuides ? 'Guides enabled' : 'Guides hidden', 1200);
-    });
 
     // Drag & drop support
     document.querySelector('.main-image-container').addEventListener('dragover', e => e.preventDefault());
@@ -1400,26 +1717,43 @@
         if (files?.length) addLogosFromFiles(Array.from(files));
     });
 
-    // Prevent text selection during drag
-    document.addEventListener('selectstart', (e) => {
-        if (isDragging) e.preventDefault();
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            saveProjectToFile();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+            e.preventDefault();
+            loadProjectInput.click();
+        }
     });
 
     // ========== INITIALIZATION ==========
     function loadSampleData() {
-        if (logosData.length > 0 || !mainPosterImg.src.includes('placehold.co')) return;
+        if (logosData.length > 0 || mainPosterImg.src) return;
         
+        // Try to load auto-saved project first
+        if (loadFromLocalStorage()) {
+            showToast('🔄 Auto-saved project restored', 2000);
+            return;
+        }
+        
+        // Create demo rows with different layouts
         rowsData = [
             { id: 'row-1', alignment: 'flex-start', layout: 'arc' },
-            { id: 'row-2', alignment: 'center', layout: 'wave' }
+            { id: 'row-2', alignment: 'center', layout: 'wave' },
+            { id: 'row-3', alignment: 'flex-end', layout: 'cluster' }
         ];
         
         const samples = [
-            { url: 'https://placehold.co/300x150/3b82f6/ffffff?text=✨BRAND', row: 'row-1', offset: 0 },
-            { url: 'https://placehold.co/300x150/8b5cf6/ffffff?text=⚡CREATIVE', row: 'row-1', offset: 20 },
-            { url: 'https://placehold.co/300x150/ec4899/ffffff?text=🎨STUDIO', row: 'row-1', offset: -15 },
-            { url: 'https://placehold.co/300x150/10b981/ffffff?text=🚀GROWTH', row: 'row-2', offset: 30 },
-            { url: 'https://placehold.co/300x150/f59e0b/ffffff?text=💡IDEAS', row: 'row-2', offset: -25 }
+            { url: 'https://placehold.co/300x150/3b82f6/ffffff?text=✨BRAND', row: 'row-1' },
+            { url: 'https://placehold.co/300x150/8b5cf6/ffffff?text=⚡CREATIVE', row: 'row-1' },
+            { url: 'https://placehold.co/300x150/ec4899/ffffff?text=🎨STUDIO', row: 'row-1' },
+            { url: 'https://placehold.co/300x150/10b981/ffffff?text=🚀GROWTH', row: 'row-2' },
+            { url: 'https://placehold.co/300x150/f59e0b/ffffff?text=💡IDEAS', row: 'row-2' },
+            { url: 'https://placehold.co/300x150/6366f1/ffffff?text=🎯FOCUS', row: 'row-3' },
+            { url: 'https://placehold.co/300x150/14b8a6/ffffff?text=🌟PREMIUM', row: 'row-3' }
         ];
         
         samples.forEach((s, i) => {
@@ -1428,14 +1762,13 @@
                 url: s.url,
                 customWidth: 85,
                 rowId: s.row,
-                orderIndex: i,
-                horizontalOffset: s.offset
+                orderIndex: i
             });
         });
         
         setTimeout(() => {
             renderAll();
-            showToast('✨ Demo loaded! Try ✋ Free Position mode', 2500);
+            showToast('✨ Demo layout loaded! Try 🎲 Dice Shuffle or 💾 Save', 2500);
         }, 400);
     }
 
@@ -1444,11 +1777,22 @@
         renderAll();
         loadSampleData();
         
-        // Smooth entrance
+        // Add subtle entrance animation
         setTimeout(() => {
             document.querySelector('.poster-canvas-area').style.opacity = '1';
             document.querySelector('.poster-canvas-area').style.transform = 'translateY(0)';
         }, 200);
+        
+        // Set initial auto-save state
+        autoSaveStatus.textContent = autoSaveEnabled ? 'ON' : 'OFF';
+        autoSaveStatus.style.color = autoSaveEnabled ? '#059669' : '#64748b';
+    });
+
+    // Save before unload if auto-save enabled
+    window.addEventListener('beforeunload', (e) => {
+        if (autoSaveEnabled && (logosData.length > 0 || mainPosterData.url)) {
+            saveToLocalStorage();
+        }
     });
 </script>
 </body>
