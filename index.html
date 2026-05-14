@@ -55,7 +55,6 @@
             display: flex;
             gap: 0.7rem;
             flex-wrap: wrap;
-            align-items: center;
         }
         .btn {
             border: none;
@@ -102,24 +101,6 @@
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
             animation: none;
         }
-        .btn-save {
-            background: linear-gradient(135deg, #059669, #047857);
-            color: white;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
-        }
-        .btn-save:hover {
-            background: linear-gradient(135deg, #047857, #065f46);
-            box-shadow: 0 6px 18px rgba(6, 95, 70, 0.4);
-        }
-        .btn-load {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: white;
-            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
-        }
-        .btn-load:hover {
-            background: linear-gradient(135deg, #6d28d9, #5b21b6);
-            box-shadow: 0 6px 18px rgba(91, 33, 182, 0.4);
-        }
         @keyframes pulse {
             0%, 100% { box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); }
             50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.55); }
@@ -149,7 +130,6 @@
             padding: 2rem;
             border-bottom: 2px dashed #dbe4ef;
             position: relative;
-            min-height: 200px;
         }
         .main-image-container::before {
             content: '';
@@ -168,12 +148,6 @@
         }
         #mainPosterImg:hover {
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
-        }
-        .main-image-placeholder {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            text-align: center;
-            padding: 2rem;
         }
 
         /* LOGO STUDIO AREA - EXPORT SAFE STYLING */
@@ -548,13 +522,8 @@
             background: linear-gradient(135deg, #ffffff, #f8fafc);
             border-top: 1px solid #e6eef7;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .project-actions {
-            display: flex;
-            gap: 0.7rem;
             flex-wrap: wrap;
         }
 
@@ -602,8 +571,6 @@
             .logo-row-handle { left: -30px; width: 24px; height: 40px; }
             .row-controls { right: -34px; }
             .logo-controls-panel { justify-content: center; }
-            .export-actions { flex-direction: column; align-items: center; }
-            .project-actions { justify-content: center; }
         }
         @media (max-width: 600px) {
             .logo-strip-title { flex-direction: column; align-items: flex-start; }
@@ -620,23 +587,6 @@
         .empty-logos-message {
             /* Will be filtered via ignoreElements */
         }
-        
-        /* Auto-save indicator */
-        .auto-save-indicator {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-left: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .auto-save-indicator.saved {
-            color: #059669;
-        }
-        .auto-save-indicator.saving {
-            color: #f59e0b;
-            animation: pulse 1s infinite;
-        }
     </style>
 </head>
 <body>
@@ -644,9 +594,6 @@
     <div class="toolbar no-export">
         <div class="brand">
             <h2>🎨 PosterCanvas Pro <span class="layout-badge">✨ Smart Layouts</span></h2>
-            <div class="auto-save-indicator" id="autoSaveIndicator">
-                <span>🗄️</span><span id="autoSaveText">Auto-saved</span>
-            </div>
         </div>
         <div class="upload-controls">
             <label class="btn btn-outline">
@@ -660,19 +607,6 @@
             <button class="btn btn-dice" id="diceBtn" title="Shuffle logos with smart patterns">
                 🎲 Dice Shuffle
             </button>
-            <div style="width:1px;height:24px;background:#e2e8f0;margin:0 0.5rem;"></div>
-            <label class="btn btn-save">
-                💾 Save
-                <input type="file" id="saveProjectTrigger" accept=".pcproj" hidden>
-            </label>
-            <label class="btn btn-load">
-                📂 Load
-                <input type="file" id="loadProjectInput" accept=".pcproj,image/*,.pdf" hidden>
-            </label>
-            <button class="btn btn-outline" id="autoSaveToggle" title="Toggle auto-save">
-                🗄️ Auto: <span id="autoSaveStatus">ON</span>
-            </button>
-            <button class="btn btn-outline" id="clearProjectBtn" title="Clear all">🗑️ Clear</button>
         </div>
     </div>
 
@@ -680,10 +614,7 @@
         <div class="poster-canvas-area" id="posterCaptureArea">
             <!-- MAIN POSTER -->
             <div class="main-image-container">
-                <img id="mainPosterImg" src="" alt="main poster" style="display:none;">
-                <div class="main-image-placeholder" id="mainPosterPlaceholder">
-                    🖼️ Upload a poster image or load a project to get started
-                </div>
+                <img id="mainPosterImg" src="https://placehold.co/1200x500/f8fafc/3b82f6?text=✨+Your+Poster+Here" alt="main poster">
             </div>
             
             <!-- LOGO STUDIO - Beautiful, Export-Ready -->
@@ -730,13 +661,8 @@
     </div>
 
     <div class="export-actions no-export">
-        <div class="project-actions">
-            <button class="btn btn-outline" id="exportPngBtn">📸 Export PNG</button>
-            <button class="btn btn-primary" id="exportPdfBtn">📑 Export PDF</button>
-        </div>
-        <div style="font-size:0.8rem;color:#64748b;">
-            💡 Tip: Save your project (.pcproj) to continue editing later
-        </div>
+        <button class="btn btn-outline" id="exportPngBtn">📸 Export PNG</button>
+        <button class="btn btn-primary" id="exportPdfBtn">📑 Export PDF</button>
     </div>
 </div>
 <div id="toastMsg" class="toast-msg">✓ Ready</div>
@@ -745,7 +671,6 @@
     // ========== DOM ELEMENTS ==========
     const mainImageInput = document.getElementById('mainImageUpload');
     const mainPosterImg = document.getElementById('mainPosterImg');
-    const mainPosterPlaceholder = document.getElementById('mainPosterPlaceholder');
     const logoUploadInput = document.getElementById('logoUpload');
     const logoRowsContainer = document.getElementById('logoRowsContainer');
     const exportPngBtn = document.getElementById('exportPngBtn');
@@ -760,23 +685,12 @@
     const arrangeRightBtn = document.getElementById('arrangeRightBtn');
     const resetLayoutBtn = document.getElementById('resetLayoutBtn');
     const addRowBtn = document.getElementById('addRowBtn');
-    const saveProjectTrigger = document.getElementById('saveProjectTrigger');
-    const loadProjectInput = document.getElementById('loadProjectInput');
-    const autoSaveToggle = document.getElementById('autoSaveToggle');
-    const autoSaveStatus = document.getElementById('autoSaveStatus');
-    const clearProjectBtn = document.getElementById('clearProjectBtn');
-    const autoSaveIndicator = document.getElementById('autoSaveIndicator');
-    const autoSaveText = document.getElementById('autoSaveText');
 
     // ========== DATA STORE ==========
-    let logosData = []; // { id, url, customWidth, rowId, orderIndex, base64 }
+    let logosData = []; // { id, url, customWidth, rowId, orderIndex }
     let rowsData = [{ id: 'row-1', alignment: 'flex-start', layout: 'balanced' }];
-    let mainPosterData = { url: '', base64: '' };
     let sortableRowsInstance = null;
     let sortableLogoInstances = {};
-    let autoSaveEnabled = true;
-    let autoSaveTimeout = null;
-    const PROJECT_STORAGE_KEY = 'posterCanvas_project_v2';
 
     // ========== LAYOUT PRESETS ==========
     const LAYOUT_PRESETS = {
@@ -807,304 +721,6 @@
             [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
         }
         return newArr;
-    }
-
-    // Convert blob URL to base64 for saving
-    async function blobUrlToBase64(blobUrl) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/png'));
-            };
-            img.onerror = reject;
-            img.src = blobUrl;
-        });
-    }
-
-    // Convert base64 to blob URL for loading
-    function base64ToBlobUrl(base64, mimeType = 'image/png') {
-        const byteString = atob(base64.split(',')[1]);
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-        const blob = new Blob([ab], { type: mimeType });
-        return URL.createObjectURL(blob);
-    }
-
-    // ========== AUTO-SAVE SYSTEM ==========
-    function triggerAutoSave() {
-        if (!autoSaveEnabled) return;
-        
-        autoSaveIndicator.classList.remove('saved');
-        autoSaveIndicator.classList.add('saving');
-        autoSaveText.textContent = 'Saving...';
-        
-        if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(() => {
-            saveToLocalStorage();
-            autoSaveIndicator.classList.remove('saving');
-            autoSaveIndicator.classList.add('saved');
-            autoSaveText.textContent = 'Saved';
-            setTimeout(() => {
-                autoSaveIndicator.classList.remove('saved');
-                autoSaveText.textContent = 'Auto-saved';
-            }, 3000);
-        }, 1000);
-    }
-
-    function saveToLocalStorage() {
-        try {
-            const projectData = {
-                version: '2.0',
-                timestamp: Date.now(),
-                mainPoster: mainPosterData,
-                logos: logosData.map(logo => ({
-                    ...logo,
-                    // Store base64 for persistence
-                    base64: logo.base64 || (logo.url?.startsWith('blob:') ? null : logo.url)
-                })),
-                rows: rowsData,
-                settings: {
-                    globalLogoSize: globalLogoSizeInput.value,
-                    layoutPreset: layoutPresetSelect.value
-                }
-            };
-            localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(projectData));
-        } catch (e) {
-            console.warn('Auto-save failed (storage full?):', e);
-            showToast('⚠️ Auto-save failed - storage may be full', 2500);
-        }
-    }
-
-    function loadFromLocalStorage() {
-        try {
-            const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
-            if (!saved) return false;
-            const projectData = JSON.parse(saved);
-            return loadProjectData(projectData, false); // silent load
-        } catch (e) {
-            console.warn('Failed to load auto-saved project:', e);
-            return false;
-        }
-    }
-
-    function clearLocalStorage() {
-        localStorage.removeItem(PROJECT_STORAGE_KEY);
-    }
-
-    // ========== PROJECT SAVE/LOAD ==========
-    async function saveProjectToFile() {
-        showToast('Preparing project save... 💾', 1500);
-        
-        // Convert blob URLs to base64 for all images
-        const logosWithBase64 = await Promise.all(logosData.map(async (logo) => {
-            if (logo.url?.startsWith('blob:') && !logo.base64) {
-                try {
-                    logo.base64 = await blobUrlToBase64(logo.url);
-                } catch (e) {
-                    console.warn('Could not convert logo to base64:', logo.id);
-                }
-            }
-            return logo;
-        }));
-        
-        // Convert main poster if needed
-        if (mainPosterData.url?.startsWith('blob:') && !mainPosterData.base64) {
-            try {
-                mainPosterData.base64 = await blobUrlToBase64(mainPosterData.url);
-            } catch (e) {
-                console.warn('Could not convert main poster to base64');
-            }
-        }
-        
-        const projectData = {
-            version: '2.0',
-            timestamp: Date.now(),
-            projectName: `PosterCanvas_Project_${new Date().toISOString().slice(0,10)}`,
-            mainPoster: mainPosterData,
-            logos: logosWithBase64,
-            rows: rowsData,
-            settings: {
-                globalLogoSize: globalLogoSizeInput.value,
-                layoutPreset: layoutPresetSelect.value
-            }
-        };
-        
-        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `poster_project_${Date.now()}.pcproj`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        showToast('✅ Project saved! (.pcproj file)', 2500);
-    }
-
-    async function loadProjectFromFile(file) {
-        if (!file) return;
-        
-        // Handle PNG/PDF as reference image only
-        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-            showToast('📄 PDF loaded as reference - set as main poster', 2000);
-            // For PDFs, we can only show a placeholder since we can't parse them client-side easily
-            mainPosterPlaceholder.textContent = '📄 PDF Reference Loaded\n(Use "Export PDF" to generate new version)';
-            mainPosterPlaceholder.style.display = 'block';
-            mainPosterImg.style.display = 'none';
-            mainPosterData = { url: '', base64: '', fileName: file.name, type: 'pdf' };
-            triggerAutoSave();
-            return;
-        }
-        
-        if (file.type.startsWith('image/') && !file.name.endsWith('.pcproj')) {
-            // Load as main poster reference
-            const reader = new FileReader();
-            reader.onload = e => {
-                mainPosterImg.src = e.target.result;
-                mainPosterImg.style.display = 'block';
-                mainPosterPlaceholder.style.display = 'none';
-                mainPosterData = { url: e.target.result, base64: e.target.result, fileName: file.name };
-                showToast('🖼️ Image loaded as poster reference', 1500);
-                triggerAutoSave();
-            };
-            reader.readAsDataURL(file);
-            return;
-        }
-        
-        // Handle .pcproj project files
-        if (!file.name.endsWith('.pcproj')) {
-            showToast('Please select a .pcproj project file', 2000);
-            return;
-        }
-        
-        showToast('Loading project... 📂', 1500);
-        
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const projectData = JSON.parse(e.target.result);
-                const success = await loadProjectData(projectData);
-                if (success) {
-                    showToast('✅ Project loaded! Continue editing 🎨', 2500);
-                }
-            } catch (err) {
-                console.error('Load error:', err);
-                showToast('❌ Failed to load project file', 2500);
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    async function loadProjectData(projectData, showSuccess = true) {
-        try {
-            // Restore settings
-            if (projectData.settings) {
-                globalLogoSizeInput.value = projectData.settings.globalLogoSize || 85;
-                layoutPresetSelect.value = projectData.settings.layoutPreset || 'balanced';
-            }
-            
-            // Restore main poster
-            if (projectData.mainPoster?.base64) {
-                mainPosterImg.src = projectData.mainPoster.base64;
-                mainPosterImg.style.display = 'block';
-                mainPosterPlaceholder.style.display = 'none';
-                mainPosterData = { 
-                    url: projectData.mainPoster.base64, 
-                    base64: projectData.mainPoster.base64 
-                };
-            } else if (projectData.mainPoster?.url) {
-                mainPosterImg.src = projectData.mainPoster.url;
-                mainPosterImg.style.display = 'block';
-                mainPosterPlaceholder.style.display = 'none';
-                mainPosterData = { url: projectData.mainPoster.url };
-            }
-            
-            // Restore rows
-            rowsData = projectData.rows?.length ? projectData.rows : [{ id: 'row-1', alignment: 'flex-start', layout: 'balanced' }];
-            
-            // Restore logos (convert base64 back to blob URLs)
-            // First, revoke any existing blob URLs to prevent memory leaks
-            logosData.forEach(logo => {
-                if (logo.url?.startsWith('blob:')) {
-                    try { URL.revokeObjectURL(logo.url); } catch(e) {}
-                }
-            });
-            
-            logosData = (projectData.logos || []).map(logo => {
-                let displayUrl = logo.url;
-                if (logo.base64) {
-                    displayUrl = base64ToBlobUrl(logo.base64);
-                }
-                return {
-                    id: logo.id || `logo-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
-                    url: displayUrl,
-                    base64: logo.base64, // Keep base64 for future saves
-                    customWidth: logo.customWidth || 85,
-                    rowId: logo.rowId || rowsData[0]?.id,
-                    orderIndex: logo.orderIndex || 0
-                };
-            });
-            
-            // Re-render everything
-            renderAll();
-            
-            if (showSuccess) {
-                // Update UI indicators
-                autoSaveIndicator.classList.add('saved');
-                autoSaveText.textContent = 'Loaded';
-                setTimeout(() => {
-                    autoSaveIndicator.classList.remove('saved');
-                    autoSaveText.textContent = 'Auto-saved';
-                }, 3000);
-            }
-            
-            triggerAutoSave(); // Save loaded state
-            return true;
-        } catch (err) {
-            console.error('Error loading project data:', err);
-            return false;
-        }
-    }
-
-    function clearProject() {
-        if (!confirm('Clear all content and start fresh? This cannot be undone.')) return;
-        
-        // Revoke blob URLs
-        logosData.forEach(logo => {
-            if (logo.url?.startsWith('blob:')) {
-                try { URL.revokeObjectURL(logo.url); } catch(e) {}
-            }
-        });
-        if (mainPosterData.url?.startsWith('blob:')) {
-            try { URL.revokeObjectURL(mainPosterData.url); } catch(e) {}
-        }
-        
-        // Reset data
-        logosData = [];
-        rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
-        mainPosterData = { url: '', base64: '' };
-        mainPosterImg.src = '';
-        mainPosterImg.style.display = 'none';
-        mainPosterPlaceholder.style.display = 'block';
-        mainPosterPlaceholder.textContent = '🖼️ Upload a poster image or load a project to get started';
-        
-        // Reset UI
-        globalLogoSizeInput.value = 85;
-        layoutPresetSelect.value = 'balanced';
-        
-        renderAll();
-        clearLocalStorage();
-        showToast('🗑️ Project cleared - ready for new design', 2000);
     }
 
     // ========== ROW CREATION ==========
@@ -1247,7 +863,6 @@
             logo.customWidth = val;
             img.style.width = `${val}px`;
             showToast(`Resized to ${val}px`, 1000);
-            triggerAutoSave();
         });
         
         wrapper.appendChild(img);
@@ -1327,12 +942,14 @@
     }
 
     function applyGridLayout(elements) {
+        // Grid is handled via CSS grid template, just ensure even sizing
         elements.forEach(el => {
             el.style.flex = '0 0 auto';
         });
     }
 
     function applyMasonryLayout(elements) {
+        // Simple masonry: vary heights slightly for visual interest
         elements.forEach((el, i) => {
             const img = el.querySelector('img');
             if (img) {
@@ -1382,7 +999,6 @@
         layoutPresetSelect.value = randomLayout;
         renderAll();
         showToast(`🎲 ${randomLayout.toUpperCase()} layout applied!`, 2200);
-        triggerAutoSave();
     }
 
     // ========== DATA OPERATIONS ==========
@@ -1392,7 +1008,6 @@
         logosData.forEach(logo => logo.customWidth = newSize);
         renderAll();
         showToast(`Size: ${newSize}px ✨`, 1200);
-        triggerAutoSave();
     }
 
     function setGlobalAlignment(align) {
@@ -1402,14 +1017,12 @@
         });
         renderAll();
         showToast(`Alignment: ${align} ✓`, 1000);
-        triggerAutoSave();
     }
 
     function setLayoutPreset(presetName) {
         rowsData.forEach(row => row.layout = presetName);
         renderAll();
         showToast(`Layout: ${presetName} 🎨`, 1300);
-        triggerAutoSave();
     }
 
     function addNewRow() {
@@ -1422,7 +1035,6 @@
         });
         renderAll();
         showToast('New row added ✨', 1200);
-        triggerAutoSave();
     }
 
     function duplicateRow(rowId) {
@@ -1448,7 +1060,6 @@
         
         renderAll();
         showToast('Row duplicated 📋', 1300);
-        triggerAutoSave();
     }
 
     function removeRow(rowId) {
@@ -1465,7 +1076,6 @@
         }
         renderAll();
         showToast('Row removed', 1000);
-        triggerAutoSave();
     }
 
     function removeLogoById(id) {
@@ -1484,7 +1094,6 @@
         
         renderAll();
         showToast('Logo removed ✓', 1000);
-        triggerAutoSave();
     }
 
     function handleLogoMove(evt, sourceRowId) {
@@ -1500,7 +1109,6 @@
                 item.setAttribute('data-row-id', newRowId);
                 showToast('Logo moved to new row ↕️', 1000);
                 renderAll(); // Re-render to apply new row's layout
-                triggerAutoSave();
             }
         }
     }
@@ -1515,7 +1123,6 @@
         if (newOrder.length === rowsData.length) {
             rowsData = newOrder;
             showToast('Row order updated ↕️', 1000);
-            triggerAutoSave();
         }
     }
 
@@ -1543,20 +1150,12 @@
         
         renderAll();
         showToast(`Added ${valid.length} logo${valid.length>1?'s':''} ✨`, 1500);
-        triggerAutoSave();
     }
 
     function setMainPoster(file) {
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = e => { 
-            mainPosterImg.src = e.target.result;
-            mainPosterImg.style.display = 'block';
-            mainPosterPlaceholder.style.display = 'none';
-            mainPosterData = { url: e.target.result, base64: e.target.result };
-            showToast('Poster updated 🖼️', 1300);
-            triggerAutoSave();
-        };
+        reader.onload = e => { mainPosterImg.src = e.target.result; showToast('Poster updated 🖼️', 1300); };
         reader.readAsDataURL(file);
     }
 
@@ -1575,6 +1174,7 @@
                 windowWidth: captureArea.scrollWidth,
                 windowHeight: captureArea.scrollHeight,
                 ignoreElements: (el) => {
+                    // Hide all UI controls during export
                     return el.classList?.contains('no-export') || 
                            el.closest?.('.no-export') ||
                            el.classList?.contains('logo-delete-badge') ||
@@ -1623,7 +1223,7 @@
         const pdf = new jsPDF({
             orientation: imgW > imgH ? 'landscape' : 'portrait',
             unit: 'mm',
-            format: [Math.min(imgW * 0.264583, 297), Math.min(imgH * 0.264583, 420)]
+            format: [Math.min(imgW * 0.264583, 297), Math.min(imgH * 0.264583, 420)] // Fit A4 max
         });
         
         const pageW = pdf.internal.pageSize.getWidth();
@@ -1646,48 +1246,6 @@
         }
     });
     
-    // Project save/load handlers
-    saveProjectTrigger.addEventListener('change', e => {
-        if (e.target.files?.[0]) {
-            // This is a hidden trigger - we actually call saveProjectToFile directly
-            saveProjectToFile();
-            saveProjectTrigger.value = '';
-        }
-    });
-    
-    loadProjectInput.addEventListener('change', e => {
-        if (e.target.files?.[0]) {
-            loadProjectFromFile(e.target.files[0]);
-            loadProjectInput.value = '';
-        }
-    });
-    
-    // Direct button click handlers for save/load
-    document.querySelector('.btn-save').addEventListener('click', (e) => {
-        e.preventDefault();
-        saveProjectToFile();
-    });
-    
-    document.querySelector('.btn-load').addEventListener('click', (e) => {
-        e.preventDefault();
-        loadProjectInput.click();
-    });
-    
-    // Auto-save toggle
-    autoSaveToggle.addEventListener('click', () => {
-        autoSaveEnabled = !autoSaveEnabled;
-        autoSaveStatus.textContent = autoSaveEnabled ? 'ON' : 'OFF';
-        autoSaveStatus.style.color = autoSaveEnabled ? '#059669' : '#64748b';
-        showToast(autoSaveEnabled ? '✅ Auto-save enabled' : '⏸️ Auto-save paused', 1500);
-        if (autoSaveEnabled) {
-            saveToLocalStorage();
-            autoSaveIndicator.classList.add('saved');
-        }
-    });
-    
-    // Clear project
-    clearProjectBtn.addEventListener('click', clearProject);
-    
     globalLogoSizeInput.addEventListener('change', e => applyGlobalSize(parseInt(e.target.value)));
     layoutPresetSelect.addEventListener('change', e => setLayoutPreset(e.target.value));
     
@@ -1697,7 +1255,7 @@
     
     diceBtn.addEventListener('click', diceShuffle);
     addRowBtn.addEventListener('click', addNewRow);
-    resetLayoutBtn.addEventListener('click', () => { renderAll(); showToast('Layout reset 🔄', 1000); triggerAutoSave(); });
+    resetLayoutBtn.addEventListener('click', () => { renderAll(); showToast('Layout reset 🔄', 1000); });
     
     exportPngBtn.addEventListener('click', exportAsPNG);
     exportPdfBtn.addEventListener('click', exportAsPDF);
@@ -1717,27 +1275,9 @@
         if (files?.length) addLogosFromFiles(Array.from(files));
     });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveProjectToFile();
-        }
-        if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
-            e.preventDefault();
-            loadProjectInput.click();
-        }
-    });
-
     // ========== INITIALIZATION ==========
     function loadSampleData() {
-        if (logosData.length > 0 || mainPosterImg.src) return;
-        
-        // Try to load auto-saved project first
-        if (loadFromLocalStorage()) {
-            showToast('🔄 Auto-saved project restored', 2000);
-            return;
-        }
+        if (logosData.length > 0 || !mainPosterImg.src.includes('placehold.co')) return;
         
         // Create demo rows with different layouts
         rowsData = [
@@ -1768,7 +1308,7 @@
         
         setTimeout(() => {
             renderAll();
-            showToast('✨ Demo layout loaded! Try 🎲 Dice Shuffle or 💾 Save', 2500);
+            showToast('✨ Demo layout loaded! Try 🎲 Dice Shuffle', 2500);
         }, 400);
     }
 
@@ -1782,17 +1322,6 @@
             document.querySelector('.poster-canvas-area').style.opacity = '1';
             document.querySelector('.poster-canvas-area').style.transform = 'translateY(0)';
         }, 200);
-        
-        // Set initial auto-save state
-        autoSaveStatus.textContent = autoSaveEnabled ? 'ON' : 'OFF';
-        autoSaveStatus.style.color = autoSaveEnabled ? '#059669' : '#64748b';
-    });
-
-    // Save before unload if auto-save enabled
-    window.addEventListener('beforeunload', (e) => {
-        if (autoSaveEnabled && (logosData.length > 0 || mainPosterData.url)) {
-            saveToLocalStorage();
-        }
     });
 </script>
 </body>
