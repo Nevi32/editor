@@ -1,1328 +1,1065 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>PosterCanvas Pro | Smart Logo Studio + Layout Designer</title>
-    <!-- html2canvas + jspdf -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- SortableJS for drag & drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poster Overlay Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            padding: 2rem 1.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+  :root {
+    --bg: #0e0e11;
+    --surface: #17171c;
+    --surface2: #1f1f27;
+    --border: rgba(255,255,255,0.08);
+    --border-active: rgba(255,255,255,0.2);
+    --accent: #c8ff57;
+    --accent-dim: rgba(200,255,87,0.12);
+    --text: #f0f0f0;
+    --text-muted: #777;
+    --text-dim: #444;
+    --danger: #ff5757;
+    --radius: 10px;
+    --panel: 280px;
+  }
 
-        .app-container {
-            max-width: 1400px;
-            width: 100%;
-            background: white;
-            border-radius: 2rem;
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-        }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-        /* TOOLBAR */
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-            border-bottom: 1px solid #e6eef7;
-        }
-        .brand h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1a3a5c, #2d6ba3, #4a9fd8);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            letter-spacing: -0.3px;
-        }
-        .upload-controls {
-            display: flex;
-            gap: 0.7rem;
-            flex-wrap: wrap;
-        }
-        .btn {
-            border: none;
-            background: #f0f4f8;
-            padding: 0.55rem 1.3rem;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.87rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            color: #1e2a3a;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn-primary {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-            box-shadow: 0 6px 18px rgba(30, 64, 175, 0.4);
-        }
-        .btn-outline {
-            background: white;
-            border: 1.5px solid #cbd5e1;
-        }
-        .btn-outline:hover {
-            background: #f8fafc;
-            border-color: #3b82f6;
-            color: #2563eb;
-        }
-        .btn-dice {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: white;
-            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
-            animation: pulse 2s infinite;
-        }
-        .btn-dice:hover {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            animation: none;
-        }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); }
-            50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.55); }
-        }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    gap: 16px;
+  }
 
-        /* POSTER AREA */
-        .poster-wrapper {
-            background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
-            padding: 1.8rem 2rem 0 2rem;
-        }
-        .poster-canvas-area {
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            overflow: visible;
-            border: 1px solid #eef2f7;
-            position: relative;
-        }
+  .logo {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
 
-        /* MAIN POSTER IMAGE */
-        .main-image-container {
-            width: 100%;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            border-bottom: 2px dashed #dbe4ef;
-            position: relative;
-        }
-        .main-image-container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
-        }
-        #mainPosterImg {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            object-fit: contain;
-            border-radius: 24px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-            transition: box-shadow 0.3s ease;
-        }
-        #mainPosterImg:hover {
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
-        }
+  .logo span { color: var(--text-muted); font-weight: 400; }
 
-        /* LOGO STUDIO AREA - EXPORT SAFE STYLING */
-        .logo-playground {
-            background: white;
-            padding: 2.2rem 2rem;
-            position: relative;
-        }
-        
-        /* Decorative background pattern - INCLUDED IN EXPORT */
-        .logo-playground::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: 
-                radial-gradient(circle at 25px 25px, #eef2f7 2px, transparent 2px),
-                radial-gradient(circle at 75px 75px, #f1f5f9 1.5px, transparent 1.5px);
-            background-size: 100px 100px;
-            opacity: 0.4;
-            pointer-events: none;
-            border-radius: 24px;
-            z-index: 0;
-        }
-        
-        .logo-strip-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            margin-bottom: 1.8rem;
-            gap: 1.2rem;
-            position: relative;
-            z-index: 2;
-        }
-        .title-section h4 {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 1.1rem;
-            background: linear-gradient(135deg, #1e293b, #334155);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .title-section p {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 3px;
-        }
-        
-        .logo-controls-panel {
-            display: flex;
-            gap: 0.8rem;
-            align-items: center;
-            flex-wrap: wrap;
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        
-        .size-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: white;
-            padding: 0.25rem 0.9rem;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            font-weight: 500;
-            color: #334155;
-        }
-        .size-control input {
-            width: 65px;
-            padding: 4px 8px;
-            border-radius: 25px;
-            border: 1px solid #cbd5e1;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: border-color 0.2s;
-        }
-        .size-control input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-        
-        .arrange-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .icon-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 40px;
-            padding: 6px 13px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.15s;
-            color: #475569;
-        }
-        .icon-btn:hover {
-            background: #eff6ff;
-            border-color: #3b82f6;
-            color: #2563eb;
-            transform: translateY(-1px);
-        }
-        
-        .layout-selector {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: white;
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            border: 1px solid #e2e8f0;
-            font-weight: 500;
-            color: #334155;
-        }
-        .layout-selector select {
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: #1e293b;
-            cursor: pointer;
-            padding: 2px;
-            outline: none;
-        }
-        .layout-selector select option {
-            background: white;
-            color: #1e293b;
-        }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
-        /* ROW-BASED LOGO CONTAINER - EXPORT READY */
-        .logo-rows-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            min-height: 120px;
-            padding: 0.8rem 0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .logo-row {
-            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-            border-radius: 28px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            align-items: center;
-            gap: 1.8rem 2.2rem;
-            padding: 1.8rem 1.5rem;
-            transition: all 0.25s ease;
-            border: 1px solid #eef2f7;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-        }
-        .logo-row::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-            border-radius: 28px 28px 0 0;
-            opacity: 0.7;
-        }
-        .logo-row:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            border-color: #dbe4ef;
-            transform: translateY(-2px);
-        }
-        
-        /* Row drag handle */
-        .logo-row-handle {
-            position: absolute;
-            left: -36px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            width: 28px;
-            height: 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: grab;
-            padding: 6px 3px;
-            opacity: 0;
-            transition: all 0.2s;
-            z-index: 5;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        .logo-row:hover .logo-row-handle { opacity: 1; }
-        .logo-row-handle:active { cursor: grabbing; }
-        .logo-row-handle::before,
-        .logo-row-handle::after {
-            content: "";
-            display: block;
-            width: 18px;
-            height: 2.5px;
-            background: linear-gradient(90deg, #64748b, #94a3b8);
-            margin: 3px 0;
-            border-radius: 3px;
-        }
-        .logo-row-handle::after { margin-top: -0.5px; }
-        
-        /* LOGO ITEMS - CLEAN EXPORT STYLE */
-        .free-logo-item {
-            position: relative;
-            display: inline-flex;
-            cursor: grab;
-            transition: all 0.2s ease;
-            user-select: none;
-            flex-shrink: 0;
-            padding: 8px;
-            border-radius: 16px;
-        }
-        .free-logo-item:hover {
-            background: rgba(59, 130, 246, 0.06);
-            transform: scale(1.03);
-        }
-        .free-logo-item:active { cursor: grabbing; }
-        .free-logo-item img {
-            display: block;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            transition: all 0.25s ease;
-            pointer-events: none;
-            max-width: 250px;
-            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.12));
-        }
-        .free-logo-item:hover img {
-            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.18));
-            transform: scale(1.02);
-        }
-        
-        /* Delete badge */
-        .logo-delete-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: all 0.15s;
-            box-shadow: 0 3px 8px rgba(220, 38, 38, 0.35);
-            font-family: monospace;
-            z-index: 10;
-            border: 2px solid white;
-        }
-        .free-logo-item:hover .logo-delete-badge { opacity: 1; transform: scale(1.1); }
-        
-        /* Size control */
-        .logo-size-control {
-            margin-top: 6px;
-            font-size: 10px;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            justify-content: center;
-            background: rgba(241, 245, 249, 0.8);
-            padding: 2px 6px;
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-        }
-        .logo-size-control label {
-            font-weight: 600;
-            color: #475569;
-        }
-        .logo-size-control input {
-            width: 48px;
-            padding: 2px 4px;
-            border-radius: 15px;
-            border: 1px solid #cbd5e1;
-            font-size: 10px;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        /* Decorative divider - INCLUDED IN EXPORT */
-        .row-divider {
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
-            margin: 0.5rem 0;
-            position: relative;
-        }
-        .row-divider::after {
-            content: '✦';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 0 12px;
-            color: #94a3b8;
-            font-size: 10px;
-        }
-        
-        .empty-logos-message {
-            width: 100%;
-            text-align: center;
-            color: #94a3b8;
-            padding: 2.5rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 500;
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border-radius: 20px;
-            border: 2px dashed #cbd5e1;
-        }
-        
-        /* Row controls */
-        .row-controls {
-            position: absolute;
-            right: -40px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 3;
-        }
-        .logo-row:hover .row-controls { opacity: 1; }
-        .row-control-btn {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.15s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        }
-        .row-control-btn:hover {
-            background: white;
-            border-color: #3b82f6;
-            color: #2563eb;
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-        }
-        .row-control-btn.danger:hover {
-            background: #fef2f2;
-            border-color: #ef4444;
-            color: #dc2626;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
-        }
+  button {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
 
-        /* EXPORT ACTIONS */
-        .export-actions {
-            padding: 1.2rem 2rem 2rem 2rem;
-            background: linear-gradient(135deg, #ffffff, #f8fafc);
-            border-top: 1px solid #e6eef7;
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--border-active); color: var(--text); }
 
-        /* TOAST */
-        .toast-msg {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #1e293b, #334155);
-            color: white;
-            padding: 10px 22px;
-            border-radius: 60px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.25s;
-            pointer-events: none;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-            letter-spacing: 0.3px;
-        }
-        .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+  .btn-accent {
+    background: var(--accent);
+    color: #0e0e11;
+    font-weight: 500;
+  }
+  .btn-accent:hover { background: #d4ff70; transform: translateY(-1px); }
+  .btn-accent:active { transform: translateY(0); }
+  .btn-accent:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
-        /* LAYOUT PREVIEW BADGES */
-        .layout-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e40af;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 8px;
-        }
+  .btn-danger {
+    background: transparent;
+    border: 1px solid rgba(255,87,87,0.25);
+    color: var(--danger);
+  }
+  .btn-danger:hover { background: rgba(255,87,87,0.1); }
 
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            body { padding: 1rem; }
-            .toolbar { flex-direction: column; align-items: stretch; padding: 1rem 1.5rem; }
-            .logo-rows-container { gap: 1.5rem; }
-            .logo-row { gap: 1.4rem 1.8rem; padding: 1.4rem 1rem; }
-            .logo-row-handle { left: -30px; width: 24px; height: 40px; }
-            .row-controls { right: -34px; }
-            .logo-controls-panel { justify-content: center; }
-        }
-        @media (max-width: 600px) {
-            .logo-strip-title { flex-direction: column; align-items: flex-start; }
-            .logo-controls-panel { width: 100%; justify-content: space-between; }
-            .export-actions { justify-content: center; }
-        }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
 
-        /* ELEMENTS TO HIDE DURING EXPORT */
-        .no-export,
-        .logo-delete-badge,
-        .logo-size-control,
-        .logo-row-handle,
-        .row-controls,
-        .empty-logos-message {
-            /* Will be filtered via ignoreElements */
-        }
-    </style>
+  .workspace {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    width: var(--panel);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .drop-zone {
+    border: 1.5px dashed var(--border-active);
+    border-radius: var(--radius);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .drop-zone input { display: none; }
+
+  .drop-zone-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+
+  .drop-zone p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .drop-zone p strong { color: var(--accent); font-weight: 600; }
+
+  .layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .layer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+  }
+
+  .layer-item:hover { border-color: var(--border-active); }
+  .layer-item.active { border-color: var(--accent); background: var(--accent-dim); }
+
+  .layer-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .layer-info { flex: 1; min-width: 0; }
+  .layer-name {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+  .layer-type { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  .layer-remove {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .layer-remove:hover { color: var(--danger); }
+
+  .props-section {
+    padding: 16px;
+    flex: 1;
+  }
+
+  .prop-row {
+    margin-bottom: 14px;
+  }
+
+  .prop-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .prop-value {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  input[type=range] {
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--surface2);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    cursor: pointer;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-conic-gradient(#1a1a20 0% 25%, #16161c 0% 50%) 0 0 / 24px 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #canvas-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: crosshair;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 24px 80px rgba(0,0,0,0.6);
+  }
+
+  #canvas-wrapper.has-poster { cursor: default; }
+
+  #base-canvas {
+    display: block;
+    max-width: calc(100vw - var(--panel) - 32px);
+    max-height: calc(100vh - 60px - 32px);
+  }
+
+  .overlay-el {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    transform-origin: center center;
+  }
+
+  .overlay-el img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .overlay-el.selected {
+    outline: 1.5px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .overlay-el .resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    border-radius: 2px;
+    cursor: nwse-resize;
+    bottom: -5px;
+    right: -5px;
+    z-index: 10;
+  }
+
+  .overlay-el .rotate-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #57b4ff;
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    cursor: grab;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .overlay-el .rotate-handle::before {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 10px;
+    background: #57b4ff;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    pointer-events: none;
+    text-align: center;
+    padding: 32px;
+  }
+
+  .empty-state .big-icon { font-size: 56px; opacity: 0.15; }
+
+  .empty-state h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.2);
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 240px;
+    line-height: 1.6;
+  }
+
+  #empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .no-selection-msg {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6;
+  }
+
+  .poster-info {
+    background: var(--surface2);
+    border-radius: 7px;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .poster-info strong { color: var(--text); }
+
+  .kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border-active);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .hint-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .blend-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 8px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .blend-select:focus { border-color: var(--accent); }
+
+  @media (max-width: 700px) {
+    :root { --panel: 200px; }
+    header { padding: 10px 14px; }
+    .logo { font-size: 13px; }
+  }
+</style>
 </head>
 <body>
-<div class="app-container">
-    <div class="toolbar no-export">
-        <div class="brand">
-            <h2>🎨 PosterCanvas Pro <span class="layout-badge">✨ Smart Layouts</span></h2>
-        </div>
-        <div class="upload-controls">
-            <label class="btn btn-outline">
-                🖼️ Poster
-                <input type="file" id="mainImageUpload" accept="image/*" hidden>
-            </label>
-            <label class="btn btn-primary">
-                ➕ Logos
-                <input type="file" id="logoUpload" accept="image/*" multiple hidden>
-            </label>
-            <button class="btn btn-dice" id="diceBtn" title="Shuffle logos with smart patterns">
-                🎲 Dice Shuffle
-            </button>
-        </div>
+
+<header>
+  <div class="logo">POSTER STUDIO <span>/ overlay tool</span></div>
+  <div class="header-actions">
+    <label class="btn-ghost" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;padding:8px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#777;transition:all .15s;" id="load-poster-btn">
+      📄 Load Poster
+      <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" id="poster-input" style="display:none">
+    </label>
+    <label class="btn-ghost" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;padding:8px 14px;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#777;transition:all .15s;" id="add-overlay-btn">
+      ＋ Add Image
+      <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml" id="overlay-input" style="display:none">
+    </label>
+    <button class="btn-accent" id="download-btn" disabled>⬇ Download PNG</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Poster</div>
+      <div id="poster-drop" class="drop-zone">
+        <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" id="poster-drop-input">
+        <div class="drop-zone-icon">🖼</div>
+        <p>Drop your <strong>poster</strong> here or click to browse</p>
+        <p style="margin-top:6px;font-size:10px;opacity:0.5;">PNG · JPG · WEBP</p>
+      </div>
+      <div id="poster-info-block" style="display:none;margin-top:10px;"></div>
     </div>
 
-    <div class="poster-wrapper">
-        <div class="poster-canvas-area" id="posterCaptureArea">
-            <!-- MAIN POSTER -->
-            <div class="main-image-container">
-                <img id="mainPosterImg" src="https://placehold.co/1200x500/f8fafc/3b82f6?text=✨+Your+Poster+Here" alt="main poster">
-            </div>
-            
-            <!-- LOGO STUDIO - Beautiful, Export-Ready -->
-            <div class="logo-playground">
-                <div class="logo-strip-title no-export">
-                    <div class="title-section">
-                        <h4>🎯 Logo Studio — Smart Arrangement + Dice Shuffle</h4>
-                        <p>Drag logos freely • Use 🎲 for creative layouts • Export clean designs</p>
-                    </div>
-                    <div class="logo-controls-panel">
-                        <div class="size-control">
-                            <label>📏 Size</label>
-                            <input type="number" id="globalLogoSize" value="85" step="5" min="30" max="250"> px
-                        </div>
-                        <div class="layout-selector">
-                            <label>🎨 Layout:</label>
-                            <select id="layoutPreset">
-                                <option value="balanced">Balanced Flow</option>
-                                <option value="grid">Clean Grid</option>
-                                <option value="arc">Elegant Arc</option>
-                                <option value="wave">Dynamic Wave</option>
-                                <option value="cluster">Creative Cluster</option>
-                                <option value="masonry">Masonry Mix</option>
-                                <option value="random">🎲 Random Scatter</option>
-                            </select>
-                        </div>
-                        <div class="arrange-buttons">
-                            <button id="arrangeLeftBtn" class="icon-btn" title="Align Left">⬅️</button>
-                            <button id="arrangeCenterBtn" class="icon-btn" title="Center">🎯</button>
-                            <button id="arrangeRightBtn" class="icon-btn" title="Align Right">➡️</button>
-                        </div>
-                        <div class="arrange-buttons">
-                            <button id="addRowBtn" class="icon-btn" title="Add Row">➕</button>
-                            <button id="resetLayoutBtn" class="icon-btn" title="Reset Layout">🔄</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="logoRowsContainer" class="logo-rows-container">
-                    <!-- Rows dynamically inserted here -->
-                </div>
-            </div>
-        </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overlays</div>
+      <div id="overlay-drop" class="drop-zone" style="padding:14px 16px;">
+        <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml" id="overlay-drop-input">
+        <div style="font-size:20px;margin-bottom:4px;opacity:0.5;">＋</div>
+        <p style="font-size:11px;">Drop logo or image to overlay</p>
+      </div>
+      <div id="layers-list" class="layers-list" style="margin-top:10px;"></div>
     </div>
 
-    <div class="export-actions no-export">
-        <button class="btn btn-outline" id="exportPngBtn">📸 Export PNG</button>
-        <button class="btn btn-primary" id="exportPdfBtn">📑 Export PDF</button>
+    <div id="props-panel" class="props-section">
+      <div class="no-selection-msg">
+        Select an overlay to edit its position, size, rotation and opacity.
+      </div>
     </div>
+
+    <div class="sidebar-section" style="margin-top:auto;">
+      <div class="sidebar-label">Shortcuts</div>
+      <div class="hint-row"><kbd class="kbd">Del</kbd> remove selected</div>
+      <div class="hint-row"><kbd class="kbd">↑↓←→</kbd> nudge 1px</div>
+      <div class="hint-row"><kbd class="kbd">Shift+↑↓←→</kbd> nudge 10px</div>
+      <div class="hint-row"><kbd class="kbd">Click canvas</kbd> deselect</div>
+    </div>
+
+  </div>
+
+  <div class="canvas-area" id="canvas-area">
+    <div id="canvas-wrapper">
+      <canvas id="base-canvas" width="800" height="600"></canvas>
+      <div id="overlay-container"></div>
+      <div id="empty-overlay">
+        <div class="empty-state">
+          <div class="big-icon">🖼</div>
+          <h2>Load a poster to begin</h2>
+          <p>Upload your base poster image, then drop logos or images on top of it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<div id="toastMsg" class="toast-msg">✓ Ready</div>
 
 <script>
-    // ========== DOM ELEMENTS ==========
-    const mainImageInput = document.getElementById('mainImageUpload');
-    const mainPosterImg = document.getElementById('mainPosterImg');
-    const logoUploadInput = document.getElementById('logoUpload');
-    const logoRowsContainer = document.getElementById('logoRowsContainer');
-    const exportPngBtn = document.getElementById('exportPngBtn');
-    const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const captureArea = document.getElementById('posterCaptureArea');
-    const toastEl = document.getElementById('toastMsg');
-    const globalLogoSizeInput = document.getElementById('globalLogoSize');
-    const layoutPresetSelect = document.getElementById('layoutPreset');
-    const diceBtn = document.getElementById('diceBtn');
-    const arrangeLeftBtn = document.getElementById('arrangeLeftBtn');
-    const arrangeCenterBtn = document.getElementById('arrangeCenterBtn');
-    const arrangeRightBtn = document.getElementById('arrangeRightBtn');
-    const resetLayoutBtn = document.getElementById('resetLayoutBtn');
-    const addRowBtn = document.getElementById('addRowBtn');
+const posterInput = document.getElementById('poster-input');
+const overlayInput = document.getElementById('overlay-input');
+const posterDropInput = document.getElementById('poster-drop-input');
+const overlayDropInput = document.getElementById('overlay-drop-input');
+const baseCanvas = document.getElementById('base-canvas');
+const ctx = baseCanvas.getContext('2d');
+const overlayContainer = document.getElementById('overlay-container');
+const canvasWrapper = document.getElementById('canvas-wrapper');
+const emptyOverlay = document.getElementById('empty-overlay');
+const downloadBtn = document.getElementById('download-btn');
+const layersList = document.getElementById('layers-list');
+const propsPanel = document.getElementById('props-panel');
+const posterInfoBlock = document.getElementById('poster-info-block');
 
-    // ========== DATA STORE ==========
-    let logosData = []; // { id, url, customWidth, rowId, orderIndex }
-    let rowsData = [{ id: 'row-1', alignment: 'flex-start', layout: 'balanced' }];
-    let sortableRowsInstance = null;
-    let sortableLogoInstances = {};
+let posterImg = null;
+let posterNaturalW = 0, posterNaturalH = 0;
+let overlays = [];
+let selectedId = null;
+let idCounter = 0;
 
-    // ========== LAYOUT PRESETS ==========
-    const LAYOUT_PRESETS = {
-        balanced: { gap: '1.8rem 2.2rem', justify: 'flex-start', style: 'flow' },
-        grid: { gap: '2rem 2.5rem', justify: 'flex-start', style: 'grid', columns: 'auto-fill' },
-        arc: { gap: '1.5rem 2rem', justify: 'center', style: 'arc', curve: 0.3 },
-        wave: { gap: '1.6rem 2.1rem', justify: 'space-around', style: 'wave', amplitude: 15 },
-        cluster: { gap: '1.2rem 1.8rem', justify: 'center', style: 'cluster', density: 1.2 },
-        masonry: { gap: '1.8rem 2rem', justify: 'space-between', style: 'masonry' },
-        random: { gap: '1.5rem 3rem', justify: 'space-evenly', style: 'scatter', randomness: 0.4 }
-    };
+function scaleForDisplay(nw, nh) {
+  const maxW = canvasWrapper.parentElement.clientWidth - 32;
+  const maxH = canvasWrapper.parentElement.clientHeight - 32;
+  const scaleW = nw > maxW ? maxW / nw : 1;
+  const scaleH = nh > maxH ? maxH / nh : 1;
+  const s = Math.min(scaleW, scaleH);
+  return { w: Math.round(nw * s), h: Math.round(nh * s), scale: s };
+}
 
-    // ========== UTILITIES ==========
-    function showToast(msg, duration = 2000) {
-        toastEl.textContent = msg;
-        toastEl.classList.add('show');
-        setTimeout(() => toastEl.classList.remove('show'), duration);
+function loadPoster(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    posterImg = img;
+    posterNaturalW = img.naturalWidth;
+    posterNaturalH = img.naturalHeight;
+    const { w, h } = scaleForDisplay(posterNaturalW, posterNaturalH);
+    baseCanvas.width = posterNaturalW;
+    baseCanvas.height = posterNaturalH;
+    baseCanvas.style.width = w + 'px';
+    baseCanvas.style.height = h + 'px';
+    overlayContainer.style.width = w + 'px';
+    overlayContainer.style.height = h + 'px';
+    ctx.drawImage(img, 0, 0);
+    emptyOverlay.style.display = 'none';
+    canvasWrapper.classList.add('has-poster');
+    downloadBtn.disabled = false;
+
+    posterInfoBlock.style.display = 'block';
+    posterInfoBlock.innerHTML = `<div class="poster-info"><strong>${file.name}</strong> <span>${posterNaturalW}×${posterNaturalH}px</span></div>`;
+
+    overlays.forEach(o => repositionToScale(o));
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function repositionToScale(o) {
+  const scaleX = overlayContainer.offsetWidth / posterNaturalW;
+  const scaleY = overlayContainer.offsetHeight / posterNaturalH;
+  o.el.style.left = (o.nx * scaleX) + 'px';
+  o.el.style.top = (o.ny * scaleY) + 'px';
+  o.el.style.width = (o.nw * scaleX) + 'px';
+  o.el.style.height = (o.nh * scaleY) + 'px';
+}
+
+function addOverlay(file) {
+  if (!posterImg) { alert('Please load a poster first.'); return; }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const id = ++idCounter;
+    const scaleX = overlayContainer.offsetWidth / posterNaturalW;
+    const scaleY = overlayContainer.offsetHeight / posterNaturalH;
+
+    // Initial size: 25% width of poster, maintain aspect
+    let initW = posterNaturalW * 0.25;
+    let initH = initW * (img.naturalHeight / img.naturalWidth);
+    const nx = (posterNaturalW - initW) / 2;
+    const ny = (posterNaturalH - initH) / 2;
+
+    const el = document.createElement('div');
+    el.className = 'overlay-el';
+    el.dataset.id = id;
+    el.style.left = (nx * scaleX) + 'px';
+    el.style.top = (ny * scaleY) + 'px';
+    el.style.width = (initW * scaleX) + 'px';
+    el.style.height = (initH * scaleY) + 'px';
+
+    const imgEl = document.createElement('img');
+    imgEl.src = url;
+    imgEl.draggable = false;
+    el.appendChild(imgEl);
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle';
+    el.appendChild(resizeHandle);
+
+    const rotateHandle = document.createElement('div');
+    rotateHandle.className = 'rotate-handle';
+    el.appendChild(rotateHandle);
+
+    overlayContainer.appendChild(el);
+
+    const overlay = { id, el, imgEl, url, file, nx, ny, nw: initW, nh: initH, rotation: 0, opacity: 1, blend: 'normal', name: file.name };
+    overlays.push(overlay);
+    setupOverlayInteraction(overlay);
+    selectOverlay(id);
+    renderLayers();
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function setupOverlayInteraction(o) {
+  const el = o.el;
+  const resizeHandle = el.querySelector('.resize-handle');
+  const rotateHandle = el.querySelector('.rotate-handle');
+
+  let drag = null;
+
+  el.addEventListener('mousedown', (e) => {
+    if (e.target === resizeHandle || e.target === rotateHandle) return;
+    e.preventDefault();
+    selectOverlay(o.id);
+    const rect = el.getBoundingClientRect();
+    drag = { type: 'move', startX: e.clientX, startY: e.clientY, startLeft: parseFloat(el.style.left), startTop: parseFloat(el.style.top) };
+  });
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    selectOverlay(o.id);
+    const startW = parseFloat(el.style.width);
+    const startH = parseFloat(el.style.height);
+    drag = { type: 'resize', startX: e.clientX, startY: e.clientY, startW, startH, aspectRatio: startW / startH };
+  });
+
+  rotateHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    selectOverlay(o.id);
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    drag = { type: 'rotate', cx, cy, startAngle: o.rotation };
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!drag) return;
+    if (drag.type === 'move') {
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+      const newLeft = drag.startLeft + dx;
+      const newTop = drag.startTop + dy;
+      el.style.left = newLeft + 'px';
+      el.style.top = newTop + 'px';
+      const sx = overlayContainer.offsetWidth / posterNaturalW;
+      const sy = overlayContainer.offsetHeight / posterNaturalH;
+      o.nx = newLeft / sx;
+      o.ny = newTop / sy;
+      updatePropsPanel();
+    } else if (drag.type === 'resize') {
+      const dx = e.clientX - drag.startX;
+      let newW = Math.max(20, drag.startW + dx);
+      let newH = e.shiftKey ? Math.max(20, drag.startH + (e.clientY - drag.startY)) : newW / drag.aspectRatio;
+      el.style.width = newW + 'px';
+      el.style.height = newH + 'px';
+      const sx = overlayContainer.offsetWidth / posterNaturalW;
+      const sy = overlayContainer.offsetHeight / posterNaturalH;
+      o.nw = newW / sx;
+      o.nh = newH / sy;
+      updatePropsPanel();
+    } else if (drag.type === 'rotate') {
+      const angle = Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx) * 180 / Math.PI + 90;
+      o.rotation = angle;
+      el.style.transform = `rotate(${angle}deg)`;
+      updatePropsPanel();
     }
+  });
 
-    function randomBetween(min, max) {
-        return Math.random() * (max - min) + min;
-    }
+  document.addEventListener('mouseup', () => { drag = null; });
 
-    function shuffleArray(array) {
-        const newArr = [...array];
-        for (let i = newArr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-        }
-        return newArr;
-    }
+  // Touch support
+  el.addEventListener('touchstart', (e) => {
+    if (e.target === resizeHandle || e.target === rotateHandle) return;
+    const t = e.touches[0];
+    selectOverlay(o.id);
+    drag = { type: 'move', startX: t.clientX, startY: t.clientY, startLeft: parseFloat(el.style.left), startTop: parseFloat(el.style.top) };
+  }, { passive: true });
 
-    // ========== ROW CREATION ==========
-    function createRowElement(rowId, rowConfig) {
-        const rowEl = document.createElement('div');
-        rowEl.className = 'logo-row';
-        rowEl.setAttribute('data-row-id', rowId);
-        
-        // Apply layout preset styles
-        const preset = LAYOUT_PRESETS[rowConfig.layout] || LAYOUT_PRESETS.balanced;
-        rowEl.style.gap = preset.gap;
-        rowEl.style.justifyContent = rowConfig.alignment || preset.justify;
-        if (preset.style === 'grid') {
-            rowEl.style.display = 'grid';
-            rowEl.style.gridTemplateColumns = `repeat(${preset.columns || 'auto-fill'}, minmax(80px, 1fr))`;
-        }
-        
-        // Decorative top accent (export-safe)
-        const accent = document.createElement('div');
-        accent.style.cssText = 'position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);border-radius:28px 28px 0 0;opacity:0.7;pointer-events:none;';
-        rowEl.appendChild(accent);
-        
-        // Drag handle (hidden in export)
-        const handle = document.createElement('div');
-        handle.className = 'logo-row-handle no-export';
-        handle.innerHTML = '<div></div><div></div><div></div>';
-        handle.title = 'Drag to reorder rows';
-        rowEl.appendChild(handle);
-        
-        // Row controls (hidden in export)
-        const controls = document.createElement('div');
-        controls.className = 'row-controls no-export';
-        controls.innerHTML = `
-            <div class="row-control-btn" title="Duplicate row">📋</div>
-            <div class="row-control-btn danger" title="Remove row">🗑️</div>
-        `;
-        controls.querySelector('.danger').addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeRow(rowId);
-        });
-        controls.querySelector('.row-control-btn:not(.danger)').addEventListener('click', (e) => {
-            e.stopPropagation();
-            duplicateRow(rowId);
-        });
-        rowEl.appendChild(controls);
-        
-        // Logo container
-        const logosContainer = document.createElement('div');
-        logosContainer.className = 'row-logos-container';
-        logosContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:inherit;align-items:center;width:100%;position:relative;z-index:1;';
-        rowEl.appendChild(logosContainer);
-        
-        return rowEl;
-    }
+  document.addEventListener('touchmove', (e) => {
+    if (!drag || drag.type !== 'move') return;
+    const t = e.touches[0];
+    const dx = t.clientX - drag.startX;
+    const dy = t.clientY - drag.startY;
+    el.style.left = (drag.startLeft + dx) + 'px';
+    el.style.top = (drag.startTop + dy) + 'px';
+    const sx = overlayContainer.offsetWidth / posterNaturalW;
+    const sy = overlayContainer.offsetHeight / posterNaturalH;
+    o.nx = (drag.startLeft + dx) / sx;
+    o.ny = (drag.startTop + dy) / sy;
+  }, { passive: true });
 
-    // ========== RENDER FUNCTIONS ==========
-    function renderAll() {
-        if (!logoRowsContainer) return;
-        logoRowsContainer.innerHTML = '';
-        
-        if (rowsData.length === 0) {
-            rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
-        }
-        
-        rowsData.forEach((row, rowIndex) => {
-            const rowEl = createRowElement(row.id, row);
-            const logosContainer = rowEl.querySelector('.row-logos-container');
-            const rowLogos = logosData.filter(logo => logo.rowId === row.id)
-                                     .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-            
-            if (rowLogos.length === 0) {
-                const emptyMsg = document.createElement('div');
-                emptyMsg.className = 'empty-logos-message no-export';
-                emptyMsg.innerHTML = '✨ Drop logos here or click <strong>➕ Logos</strong> above';
-                logosContainer.appendChild(emptyMsg);
-            } else {
-                // Apply layout-specific positioning
-                rowLogos.forEach((logo, idx) => {
-                    const logoWrapper = createLogoElement(logo, row, idx, rowLogos.length);
-                    logosContainer.appendChild(logoWrapper);
-                });
-                
-                // Apply special layout transforms after render
-                setTimeout(() => applyLayoutTransforms(rowEl, rowLogos, row.layout), 50);
-            }
-            
-            logoRowsContainer.appendChild(rowEl);
-            
-            // Initialize Sortable for logos in this row
-            if (sortableLogoInstances[row.id]) sortableLogoInstances[row.id].destroy();
-            sortableLogoInstances[row.id] = new Sortable(logosContainer, {
-                group: 'logos',
-                animation: 220,
-                handle: '.free-logo-item',
-                draggable: '.free-logo-item',
-                ghostClass: 'sortable-ghost',
-                onEnd: (evt) => handleLogoMove(evt, row.id)
-            });
-        });
-        
-        // Initialize row reordering
-        if (sortableRowsInstance) sortableRowsInstance.destroy();
-        sortableRowsInstance = new Sortable(logoRowsContainer, {
-            animation: 220,
-            handle: '.logo-row-handle',
-            draggable: '.logo-row',
-            ghostClass: 'sortable-ghost-row',
-            onEnd: updateRowsOrder
-        });
-    }
+  document.addEventListener('touchend', () => { drag = null; });
+}
 
-    function createLogoElement(logo, rowConfig, index, totalInRow) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'free-logo-item';
-        wrapper.setAttribute('data-id', logo.id);
-        wrapper.setAttribute('data-row-id', logo.rowId);
-        
-        const img = document.createElement('img');
-        const size = logo.customWidth || 85;
-        img.style.cssText = `width:${size}px;height:auto;max-height:250px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.12));`;
-        img.src = logo.url;
-        img.alt = `logo-${index}`;
-        img.setAttribute('crossorigin', 'anonymous');
-        
-        // Delete badge
-        const delBtn = document.createElement('span');
-        delBtn.className = 'logo-delete-badge no-export';
-        delBtn.innerHTML = '✕';
-        delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeLogoById(logo.id);
-        });
-        
-        // Size control
-        const sizeCtrl = document.createElement('div');
-        sizeCtrl.className = 'logo-size-control no-export';
-        sizeCtrl.innerHTML = `<label>W:</label><input type="number" value="${size}" min="30" max="250">`;
-        sizeCtrl.querySelector('input').addEventListener('change', (e) => {
-            let val = Math.min(250, Math.max(30, parseInt(e.target.value) || 85));
-            logo.customWidth = val;
-            img.style.width = `${val}px`;
-            showToast(`Resized to ${val}px`, 1000);
-        });
-        
-        wrapper.appendChild(img);
-        wrapper.appendChild(delBtn);
-        wrapper.appendChild(sizeCtrl);
-        return wrapper;
-    }
+function selectOverlay(id) {
+  selectedId = id;
+  overlays.forEach(o => {
+    o.el.classList.toggle('selected', o.id === id);
+  });
+  updatePropsPanel();
+  renderLayers();
+}
 
-    // ========== SMART LAYOUT TRANSFORMS ==========
-    function applyLayoutTransforms(rowEl, logos, layoutType) {
-        const logoElements = rowEl.querySelectorAll('.free-logo-item');
-        if (!logoElements.length) return;
-        
-        switch(layoutType) {
-            case 'arc':
-                applyArcLayout(logoElements, 0.35);
-                break;
-            case 'wave':
-                applyWaveLayout(logoElements, 12);
-                break;
-            case 'cluster':
-                applyClusterLayout(logoElements, 1.15);
-                break;
-            case 'random':
-            case 'scatter':
-                applyScatterLayout(logoElements, 0.35);
-                break;
-            case 'grid':
-                applyGridLayout(logoElements);
-                break;
-            case 'masonry':
-                applyMasonryLayout(logoElements);
-                break;
-            // 'balanced' uses default flow
-        }
-    }
+function deselectAll() {
+  selectedId = null;
+  overlays.forEach(o => o.el.classList.remove('selected'));
+  updatePropsPanel();
+  renderLayers();
+}
 
-    function applyArcLayout(elements, curveIntensity) {
-        const total = elements.length;
-        elements.forEach((el, i) => {
-            const progress = i / (total - 1 || 1);
-            const arcOffset = Math.sin(progress * Math.PI) * 30 * curveIntensity;
-            el.style.transform = `translateY(${-arcOffset}px)`;
-            el.style.transition = 'transform 0.3s ease';
-        });
-    }
+function getSelected() {
+  return overlays.find(o => o.id === selectedId);
+}
 
-    function applyWaveLayout(elements, amplitude) {
-        elements.forEach((el, i) => {
-            const waveOffset = Math.sin(i * 0.8) * amplitude;
-            el.style.transform = `translateY(${waveOffset}px)`;
-            el.style.transition = 'transform 0.3s ease';
-        });
-    }
+function updatePropsPanel() {
+  const o = getSelected();
+  if (!o) {
+    propsPanel.innerHTML = `<div class="no-selection-msg">Select an overlay to edit its properties.</div>`;
+    return;
+  }
+  propsPanel.innerHTML = `
+    <div class="sidebar-label" style="margin-bottom:14px">Properties</div>
 
-    function applyClusterLayout(elements, density) {
-        const centerX = 50;
-        elements.forEach((el, i) => {
-            const angle = (i / elements.length) * Math.PI * 2;
-            const radius = 30 * density;
-            const offsetX = Math.cos(angle) * radius;
-            const offsetY = Math.sin(angle) * radius * 0.4;
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${0.95 + Math.random() * 0.1})`;
-            el.style.transition = 'transform 0.4s ease';
-        });
-    }
+    <div class="prop-row">
+      <div class="prop-label">Opacity <span class="prop-value" id="opacity-val">${Math.round(o.opacity*100)}%</span></div>
+      <input type="range" min="0" max="100" value="${Math.round(o.opacity*100)}" id="opacity-slider">
+    </div>
 
-    function applyScatterLayout(elements, randomness) {
-        elements.forEach(el => {
-            const rotate = randomBetween(-8, 8);
-            const offsetX = randomBetween(-15 * randomness, 15 * randomness);
-            const offsetY = randomBetween(-10 * randomness, 10 * randomness);
-            const scale = 0.92 + Math.random() * 0.16;
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotate}deg) scale(${scale})`;
-            el.style.transition = 'transform 0.35s ease';
-        });
-    }
+    <div class="prop-row">
+      <div class="prop-label">Rotation <span class="prop-value" id="rotation-val">${Math.round(o.rotation)}°</span></div>
+      <input type="range" min="-180" max="180" value="${Math.round(o.rotation)}" id="rotation-slider">
+    </div>
 
-    function applyGridLayout(elements) {
-        // Grid is handled via CSS grid template, just ensure even sizing
-        elements.forEach(el => {
-            el.style.flex = '0 0 auto';
-        });
-    }
+    <div class="prop-row">
+      <div class="prop-label">Blend mode</div>
+      <select class="blend-select" id="blend-select">
+        ${['normal','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion'].map(b => `<option value="${b}" ${o.blend===b?'selected':''}>${b}</option>`).join('')}
+      </select>
+    </div>
 
-    function applyMasonryLayout(elements) {
-        // Simple masonry: vary heights slightly for visual interest
-        elements.forEach((el, i) => {
-            const img = el.querySelector('img');
-            if (img) {
-                const heightVar = 80 + (i % 3) * 15;
-                img.style.maxHeight = `${heightVar}px`;
-            }
-            el.style.marginBottom = `${(i % 2) * 8}px`;
-        });
-    }
+    <div class="prop-row" style="margin-top:6px">
+      <div class="prop-label">Position (px, on poster)</div>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="nx-input" value="${Math.round(o.nx)}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none" placeholder="X">
+        <input type="number" id="ny-input" value="${Math.round(o.ny)}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none" placeholder="Y">
+      </div>
+    </div>
 
-    // ========== DICE SHUFFLE FEATURE ==========
-    function diceShuffle() {
-        if (logosData.length < 2) {
-            showToast('Add more logos to shuffle! 🎲', 1500);
-            return;
-        }
-        
-        // Animate dice button
-        diceBtn.style.animation = 'pulse 0.15s infinite';
-        setTimeout(() => diceBtn.style.animation = '', 600);
-        
-        // Pick random layout
-        const layouts = ['arc', 'wave', 'cluster', 'random', 'masonry'];
-        const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
-        
-        // Shuffle logos between rows
-        const shuffledLogos = shuffleArray([...logosData]);
-        
-        // Redistribute across rows (1-3 rows based on count)
-        const numRows = Math.min(3, Math.max(1, Math.ceil(shuffledLogos.length / 5)));
-        rowsData = [];
-        for (let i = 0; i < numRows; i++) {
-            rowsData.push({
-                id: `row-${Date.now()}-${i}`,
-                alignment: ['flex-start', 'center', 'flex-end'][Math.floor(Math.random() * 3)],
-                layout: i === 0 ? randomLayout : 'balanced'
-            });
-        }
-        
-        // Assign logos to rows
-        shuffledLogos.forEach((logo, idx) => {
-            logo.rowId = rowsData[idx % rowsData.length].id;
-            logo.orderIndex = Math.floor(idx / rowsData.length);
-        });
-        
-        // Update UI
-        layoutPresetSelect.value = randomLayout;
-        renderAll();
-        showToast(`🎲 ${randomLayout.toUpperCase()} layout applied!`, 2200);
-    }
+    <div class="prop-row">
+      <div class="prop-label">Size (px, on poster)</div>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="nw-input" value="${Math.round(o.nw)}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none" placeholder="W">
+        <input type="number" id="nh-input" value="${Math.round(o.nh)}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none" placeholder="H">
+      </div>
+    </div>
 
-    // ========== DATA OPERATIONS ==========
-    function applyGlobalSize(newSize) {
-        newSize = Math.min(250, Math.max(30, newSize || 85));
-        globalLogoSizeInput.value = newSize;
-        logosData.forEach(logo => logo.customWidth = newSize);
-        renderAll();
-        showToast(`Size: ${newSize}px ✨`, 1200);
-    }
+    <div class="btn-group" style="margin-top:16px">
+      <button class="btn-ghost btn-sm" id="flip-h-btn">↔ Flip H</button>
+      <button class="btn-ghost btn-sm" id="flip-v-btn">↕ Flip V</button>
+      <button class="btn-ghost btn-sm" id="center-btn">⊕ Center</button>
+      <button class="btn-danger btn-sm" style="margin-top:4px;width:100%" id="remove-btn">✕ Remove overlay</button>
+    </div>
+  `;
 
-    function setGlobalAlignment(align) {
-        rowsData.forEach(row => {
-            row.alignment = align === 'left' ? 'flex-start' : 
-                           align === 'center' ? 'center' : 'flex-end';
-        });
-        renderAll();
-        showToast(`Alignment: ${align} ✓`, 1000);
-    }
+  document.getElementById('opacity-slider').addEventListener('input', (e) => {
+    o.opacity = e.target.value / 100;
+    o.el.style.opacity = o.opacity;
+    document.getElementById('opacity-val').textContent = e.target.value + '%';
+  });
 
-    function setLayoutPreset(presetName) {
-        rowsData.forEach(row => row.layout = presetName);
-        renderAll();
-        showToast(`Layout: ${presetName} 🎨`, 1300);
-    }
+  document.getElementById('rotation-slider').addEventListener('input', (e) => {
+    o.rotation = parseFloat(e.target.value);
+    o.el.style.transform = `rotate(${o.rotation}deg)`;
+    document.getElementById('rotation-val').textContent = e.target.value + '°';
+  });
 
-    function addNewRow() {
-        const presets = Object.keys(LAYOUT_PRESETS);
-        const randomPreset = presets[Math.floor(Math.random() * presets.length)];
-        rowsData.push({
-            id: `row-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
-            alignment: 'flex-start',
-            layout: randomPreset
-        });
-        renderAll();
-        showToast('New row added ✨', 1200);
-    }
+  document.getElementById('blend-select').addEventListener('change', (e) => {
+    o.blend = e.target.value;
+    o.el.querySelector('img').style.mixBlendMode = o.blend;
+  });
 
-    function duplicateRow(rowId) {
-        const sourceRow = rowsData.find(r => r.id === rowId);
-        if (!sourceRow) return;
-        
-        const newRowId = `row-${Date.now()}-${Math.random().toString(36).substr(2,5)}`;
-        rowsData.push({
-            id: newRowId,
-            alignment: sourceRow.alignment,
-            layout: sourceRow.layout
-        });
-        
-        // Copy logos to new row
-        logosData.filter(l => l.rowId === rowId).forEach(logo => {
-            logosData.push({
-                ...logo,
-                id: `${logo.id}-copy-${Date.now()}`,
-                rowId: newRowId,
-                url: logo.url // Reuse blob URL
-            });
-        });
-        
-        renderAll();
-        showToast('Row duplicated 📋', 1300);
-    }
+  document.getElementById('nx-input').addEventListener('change', (e) => {
+    o.nx = parseFloat(e.target.value) || 0;
+    repositionToScale(o);
+  });
+  document.getElementById('ny-input').addEventListener('change', (e) => {
+    o.ny = parseFloat(e.target.value) || 0;
+    repositionToScale(o);
+  });
+  document.getElementById('nw-input').addEventListener('change', (e) => {
+    o.nw = parseFloat(e.target.value) || 10;
+    repositionToScale(o);
+  });
+  document.getElementById('nh-input').addEventListener('change', (e) => {
+    o.nh = parseFloat(e.target.value) || 10;
+    repositionToScale(o);
+  });
 
-    function removeRow(rowId) {
-        // Remove logos in this row
-        logosData.filter(l => l.rowId === rowId).forEach(logo => {
-            if (logo.url?.startsWith('blob:')) URL.revokeObjectURL(logo.url);
-        });
-        logosData = logosData.filter(l => l.rowId !== rowId);
-        rowsData = rowsData.filter(r => r.id !== rowId);
-        
-        // Ensure at least one row
-        if (rowsData.length === 0) {
-            rowsData = [{ id: `row-${Date.now()}`, alignment: 'flex-start', layout: 'balanced' }];
-        }
-        renderAll();
-        showToast('Row removed', 1000);
-    }
+  document.getElementById('flip-h-btn').addEventListener('click', () => {
+    o.flipH = !o.flipH;
+    updateFlip(o);
+  });
+  document.getElementById('flip-v-btn').addEventListener('click', () => {
+    o.flipV = !o.flipV;
+    updateFlip(o);
+  });
+  document.getElementById('center-btn').addEventListener('click', () => {
+    o.nx = (posterNaturalW - o.nw) / 2;
+    o.ny = (posterNaturalH - o.nh) / 2;
+    repositionToScale(o);
+    updatePropsPanel();
+  });
+  document.getElementById('remove-btn').addEventListener('click', () => {
+    removeOverlay(o.id);
+  });
+}
 
-    function removeLogoById(id) {
-        const idx = logosData.findIndex(l => l.id === id);
-        if (idx === -1) return;
-        
-        const logo = logosData[idx];
-        if (logo.url?.startsWith('blob:')) URL.revokeObjectURL(logo.url);
-        logosData.splice(idx, 1);
-        
-        // Remove row if empty and not the last one
-        const rowHasLogos = logosData.some(l => l.rowId === logo.rowId);
-        if (!rowHasLogos && rowsData.length > 1) {
-            rowsData = rowsData.filter(r => r.id !== logo.rowId);
-        }
-        
-        renderAll();
-        showToast('Logo removed ✓', 1000);
-    }
+function updateFlip(o) {
+  const scaleX = o.flipH ? -1 : 1;
+  const scaleY = o.flipV ? -1 : 1;
+  o.el.querySelector('img').style.transform = `scale(${scaleX},${scaleY})`;
+}
 
-    function handleLogoMove(evt, sourceRowId) {
-        const item = evt.item;
-        const newRowEl = item.closest('.logo-row');
-        const newRowId = newRowEl?.getAttribute('data-row-id');
-        const logoId = item.getAttribute('data-id');
-        
-        if (newRowId && newRowId !== sourceRowId) {
-            const logo = logosData.find(l => l.id === logoId);
-            if (logo) {
-                logo.rowId = newRowId;
-                item.setAttribute('data-row-id', newRowId);
-                showToast('Logo moved to new row ↕️', 1000);
-                renderAll(); // Re-render to apply new row's layout
-            }
-        }
-    }
+function removeOverlay(id) {
+  const idx = overlays.findIndex(o => o.id === id);
+  if (idx === -1) return;
+  overlays[idx].el.remove();
+  overlays.splice(idx, 1);
+  if (selectedId === id) deselectAll();
+  renderLayers();
+}
 
-    function updateRowsOrder() {
-        const newOrder = [];
-        document.querySelectorAll('#logoRowsContainer .logo-row').forEach(rowEl => {
-            const id = rowEl.getAttribute('data-row-id');
-            const row = rowsData.find(r => r.id === id);
-            if (row) newOrder.push(row);
-        });
-        if (newOrder.length === rowsData.length) {
-            rowsData = newOrder;
-            showToast('Row order updated ↕️', 1000);
-        }
-    }
-
-    function addLogosFromFiles(files, targetRowId = null) {
-        if (!files?.length) return;
-        const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
-        if (!valid.length) { showToast('Select image files only', 1400); return; }
-        
-        const rowId = targetRowId || rowsData[0]?.id || (() => {
-            const id = `row-${Date.now()}`;
-            rowsData.push({ id, alignment: 'flex-start', layout: 'balanced' });
-            return id;
-        })();
-        
-        valid.forEach(file => {
-            const blobUrl = URL.createObjectURL(file);
-            logosData.push({
-                id: `${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
-                url: blobUrl,
-                customWidth: parseInt(globalLogoSizeInput.value) || 85,
-                rowId: rowId,
-                orderIndex: logosData.filter(l => l.rowId === rowId).length
-            });
-        });
-        
-        renderAll();
-        showToast(`Added ${valid.length} logo${valid.length>1?'s':''} ✨`, 1500);
-    }
-
-    function setMainPoster(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = e => { mainPosterImg.src = e.target.result; showToast('Poster updated 🖼️', 1300); };
-        reader.readAsDataURL(file);
-    }
-
-    // ========== EXPORT FUNCTIONS - CLEAN CAPTURE ==========
-    async function captureFinalPoster(scale = 2.8) {
-        const originalOverflow = captureArea.style.overflow;
-        captureArea.style.overflow = 'visible';
-        
-        try {
-            const canvas = await html2canvas(captureArea, {
-                scale: scale,
-                backgroundColor: '#ffffff',
-                useCORS: true,
-                allowTaint: false,
-                logging: false,
-                windowWidth: captureArea.scrollWidth,
-                windowHeight: captureArea.scrollHeight,
-                ignoreElements: (el) => {
-                    // Hide all UI controls during export
-                    return el.classList?.contains('no-export') || 
-                           el.closest?.('.no-export') ||
-                           el.classList?.contains('logo-delete-badge') ||
-                           el.classList?.contains('logo-size-control') ||
-                           el.classList?.contains('logo-row-handle') ||
-                           el.classList?.contains('row-controls') ||
-                           el.classList?.contains('empty-logos-message') ||
-                           el.tagName === 'BUTTON' ||
-                           el.tagName === 'INPUT' ||
-                           el.tagName === 'SELECT' ||
-                           (el.parentElement?.classList?.contains('toolbar')) ||
-                           (el.parentElement?.classList?.contains('export-actions'));
-                }
-            });
-            return canvas;
-        } catch (err) {
-            console.error('Export error:', err);
-            showToast('Export failed - try again', 1800);
-            return null;
-        } finally {
-            captureArea.style.overflow = originalOverflow;
-        }
-    }
-
-    async function exportAsPNG() {
-        showToast('Generating high-res PNG... 🎨', 1500);
-        const canvas = await captureFinalPoster(3.0);
-        if (!canvas) return;
-        
-        const link = document.createElement('a');
-        link.download = `poster_design_${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-        showToast('✅ PNG saved successfully!', 2000);
-    }
-
-    async function exportAsPDF() {
-        showToast('Creating PDF document... 📄', 1500);
-        const canvas = await captureFinalPoster(3.2);
-        if (!canvas) return;
-        
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const imgW = canvas.width, imgH = canvas.height;
-        
-        const pdf = new jsPDF({
-            orientation: imgW > imgH ? 'landscape' : 'portrait',
-            unit: 'mm',
-            format: [Math.min(imgW * 0.264583, 297), Math.min(imgH * 0.264583, 420)] // Fit A4 max
-        });
-        
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const ratio = Math.min(pageW / imgW, pageH / imgH);
-        const finalW = imgW * ratio;
-        const finalH = imgH * ratio;
-        
-        pdf.addImage(imgData, 'PNG', (pageW - finalW)/2, (pageH - finalH)/2, finalW, finalH, undefined, 'MEDIUM');
-        pdf.save(`poster_design_${Date.now()}.pdf`);
-        showToast('📄 PDF downloaded!', 2200);
-    }
-
-    // ========== EVENT LISTENERS ==========
-    mainImageInput.addEventListener('change', e => e.target.files[0] && setMainPoster(e.target.files[0]));
-    logoUploadInput.addEventListener('change', e => {
-        if (e.target.files?.length) {
-            addLogosFromFiles(Array.from(e.target.files));
-            logoUploadInput.value = '';
-        }
+function renderLayers() {
+  layersList.innerHTML = '';
+  if (overlays.length === 0) {
+    layersList.innerHTML = '<div style="font-size:11px;color:var(--text-dim);font-family:\'DM Mono\',monospace;text-align:center;padding:8px 0">No overlays yet</div>';
+    return;
+  }
+  [...overlays].reverse().forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'layer-item' + (o.id === selectedId ? ' active' : '');
+    div.innerHTML = `
+      <img class="layer-thumb" src="${o.imgEl.src}" alt="">
+      <div class="layer-info">
+        <div class="layer-name">${o.name}</div>
+        <div class="layer-type">${Math.round(o.nw)}×${Math.round(o.nh)}px</div>
+      </div>
+      <button class="layer-remove" title="Remove">✕</button>
+    `;
+    div.addEventListener('click', (e) => {
+      if (e.target.classList.contains('layer-remove')) {
+        removeOverlay(o.id);
+      } else {
+        selectOverlay(o.id);
+      }
     });
-    
-    globalLogoSizeInput.addEventListener('change', e => applyGlobalSize(parseInt(e.target.value)));
-    layoutPresetSelect.addEventListener('change', e => setLayoutPreset(e.target.value));
-    
-    arrangeLeftBtn.addEventListener('click', () => setGlobalAlignment('left'));
-    arrangeCenterBtn.addEventListener('click', () => setGlobalAlignment('center'));
-    arrangeRightBtn.addEventListener('click', () => setGlobalAlignment('right'));
-    
-    diceBtn.addEventListener('click', diceShuffle);
-    addRowBtn.addEventListener('click', addNewRow);
-    resetLayoutBtn.addEventListener('click', () => { renderAll(); showToast('Layout reset 🔄', 1000); });
-    
-    exportPngBtn.addEventListener('click', exportAsPNG);
-    exportPdfBtn.addEventListener('click', exportAsPDF);
+    layersList.appendChild(div);
+  });
+}
 
-    // Drag & drop support
-    document.querySelector('.main-image-container').addEventListener('dragover', e => e.preventDefault());
-    document.querySelector('.main-image-container').addEventListener('drop', e => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file?.type.startsWith('image/')) setMainPoster(file);
-    });
-    
-    logoRowsContainer.addEventListener('dragover', e => e.preventDefault());
-    logoRowsContainer.addEventListener('drop', e => {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        if (files?.length) addLogosFromFiles(Array.from(files));
-    });
+function download() {
+  if (!posterImg) return;
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = posterNaturalW;
+  exportCanvas.height = posterNaturalH;
+  const ectx = exportCanvas.getContext('2d');
+  ectx.drawImage(posterImg, 0, 0);
 
-    // ========== INITIALIZATION ==========
-    function loadSampleData() {
-        if (logosData.length > 0 || !mainPosterImg.src.includes('placehold.co')) return;
-        
-        // Create demo rows with different layouts
-        rowsData = [
-            { id: 'row-1', alignment: 'flex-start', layout: 'arc' },
-            { id: 'row-2', alignment: 'center', layout: 'wave' },
-            { id: 'row-3', alignment: 'flex-end', layout: 'cluster' }
-        ];
-        
-        const samples = [
-            { url: 'https://placehold.co/300x150/3b82f6/ffffff?text=✨BRAND', row: 'row-1' },
-            { url: 'https://placehold.co/300x150/8b5cf6/ffffff?text=⚡CREATIVE', row: 'row-1' },
-            { url: 'https://placehold.co/300x150/ec4899/ffffff?text=🎨STUDIO', row: 'row-1' },
-            { url: 'https://placehold.co/300x150/10b981/ffffff?text=🚀GROWTH', row: 'row-2' },
-            { url: 'https://placehold.co/300x150/f59e0b/ffffff?text=💡IDEAS', row: 'row-2' },
-            { url: 'https://placehold.co/300x150/6366f1/ffffff?text=🎯FOCUS', row: 'row-3' },
-            { url: 'https://placehold.co/300x150/14b8a6/ffffff?text=🌟PREMIUM', row: 'row-3' }
-        ];
-        
-        samples.forEach((s, i) => {
-            logosData.push({
-                id: `demo-${i}`,
-                url: s.url,
-                customWidth: 85,
-                rowId: s.row,
-                orderIndex: i
-            });
-        });
-        
-        setTimeout(() => {
-            renderAll();
-            showToast('✨ Demo layout loaded! Try 🎲 Dice Shuffle', 2500);
-        }, 400);
+  const scaleX = overlayContainer.offsetWidth / posterNaturalW;
+  const scaleY = overlayContainer.offsetHeight / posterNaturalH;
+
+  const loadAll = overlays.map(o => {
+    return new Promise((res) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ectx.save();
+        ectx.globalAlpha = o.opacity;
+        ectx.globalCompositeOperation = blendModeToComposite(o.blend);
+        const cx = o.nx + o.nw / 2;
+        const cy = o.ny + o.nh / 2;
+        ectx.translate(cx, cy);
+        ectx.rotate(o.rotation * Math.PI / 180);
+        const sx = o.flipH ? -1 : 1;
+        const sy = o.flipV ? -1 : 1;
+        ectx.scale(sx, sy);
+        ectx.drawImage(img, -o.nw / 2, -o.nh / 2, o.nw, o.nh);
+        ectx.restore();
+        res();
+      };
+      img.onerror = res;
+      img.src = o.imgEl.src;
+    });
+  });
+
+  Promise.all(loadAll).then(() => {
+    const link = document.createElement('a');
+    link.download = 'poster-overlay-' + Date.now() + '.png';
+    link.href = exportCanvas.toDataURL('image/png', 1.0);
+    link.click();
+  });
+}
+
+function blendModeToComposite(mode) {
+  const map = {
+    'normal': 'source-over',
+    'multiply': 'multiply',
+    'screen': 'screen',
+    'overlay': 'overlay',
+    'darken': 'darken',
+    'lighten': 'lighten',
+    'color-dodge': 'color-dodge',
+    'color-burn': 'color-burn',
+    'hard-light': 'hard-light',
+    'soft-light': 'soft-light',
+    'difference': 'difference',
+    'exclusion': 'exclusion'
+  };
+  return map[mode] || 'source-over';
+}
+
+// Events
+posterInput.addEventListener('change', (e) => { if (e.target.files[0]) loadPoster(e.target.files[0]); });
+posterDropInput.addEventListener('change', (e) => { if (e.target.files[0]) loadPoster(e.target.files[0]); });
+overlayInput.addEventListener('change', (e) => { if (e.target.files[0]) addOverlay(e.target.files[0]); });
+overlayDropInput.addEventListener('change', (e) => { if (e.target.files[0]) addOverlay(e.target.files[0]); });
+downloadBtn.addEventListener('click', download);
+
+// Drag and drop zones
+function setupDropZone(zone, inputEl, handler) {
+  zone.addEventListener('click', () => inputEl.click());
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handler(file);
+  });
+}
+
+setupDropZone(document.getElementById('poster-drop'), posterDropInput, loadPoster);
+setupDropZone(document.getElementById('overlay-drop'), overlayDropInput, addOverlay);
+
+// Drag to canvas
+const canvasArea = document.getElementById('canvas-area');
+canvasArea.addEventListener('dragover', (e) => e.preventDefault());
+canvasArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  if (!posterImg) loadPoster(file);
+  else addOverlay(file);
+});
+
+// Deselect on canvas click
+canvasWrapper.addEventListener('mousedown', (e) => {
+  if (e.target === baseCanvas || e.target === canvasWrapper) deselectAll();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  const o = getSelected();
+  if (!o) return;
+  const step = e.shiftKey ? 10 : 1;
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (document.activeElement === document.body || document.activeElement === canvasWrapper) {
+      removeOverlay(o.id);
     }
+    return;
+  }
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+    e.preventDefault();
+    if (e.key === 'ArrowLeft') o.nx -= step;
+    if (e.key === 'ArrowRight') o.nx += step;
+    if (e.key === 'ArrowUp') o.ny -= step;
+    if (e.key === 'ArrowDown') o.ny += step;
+    repositionToScale(o);
+    updatePropsPanel();
+  }
+});
 
-    // Initialize app
-    document.addEventListener('DOMContentLoaded', () => {
-        renderAll();
-        loadSampleData();
-        
-        // Add subtle entrance animation
-        setTimeout(() => {
-            document.querySelector('.poster-canvas-area').style.opacity = '1';
-            document.querySelector('.poster-canvas-area').style.transform = 'translateY(0)';
-        }, 200);
-    });
+// Load-poster button hover style
+document.getElementById('load-poster-btn').addEventListener('mouseenter', function() {
+  this.style.borderColor = 'rgba(255,255,255,0.2)';
+  this.style.color = '#f0f0f0';
+});
+document.getElementById('load-poster-btn').addEventListener('mouseleave', function() {
+  this.style.borderColor = 'rgba(255,255,255,0.08)';
+  this.style.color = '#777';
+});
+document.getElementById('add-overlay-btn').addEventListener('mouseenter', function() {
+  this.style.borderColor = 'rgba(255,255,255,0.2)';
+  this.style.color = '#f0f0f0';
+});
+document.getElementById('add-overlay-btn').addEventListener('mouseleave', function() {
+  this.style.borderColor = 'rgba(255,255,255,0.08)';
+  this.style.color = '#777';
+});
 </script>
 </body>
 </html>
